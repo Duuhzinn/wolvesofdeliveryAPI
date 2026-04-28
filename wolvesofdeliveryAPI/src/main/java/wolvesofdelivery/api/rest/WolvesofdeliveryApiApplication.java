@@ -18,7 +18,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ComponentScan(basePackages = {"wolvesofdelivery.*"})
 @EnableJpaRepositories(basePackages = {"wolvesofdelivery.api.rest.repository"})
 @EnableTransactionManagement
-@EnableWebMvc
 @RestController
 @EnableAutoConfiguration
 
@@ -30,12 +29,10 @@ public class WolvesofdeliveryApiApplication implements WebMvcConfigurer {
 	
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
-		
-		//liberando as requisições POST, PUT, PATCH E GET para todos que acessarem a API
-		registry.addMapping("/**")
-		.allowedMethods("POST", "PUT", "PATCH", "GET")
-		.allowedOrigins("*");
-		
+	    registry.addMapping("/**")
+	        .allowedOrigins("*")
+	        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+	        .allowedHeaders("*");
 	}
 
 }

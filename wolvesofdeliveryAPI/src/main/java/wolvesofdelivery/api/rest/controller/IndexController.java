@@ -1,7 +1,6 @@
 package wolvesofdelivery.api.rest.controller;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,9 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 import wolvesofdelivery.api.rest.model.Usuario;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 
-
 //liberando o acesso para qualquer sistema sera permitido
-@CrossOrigin
+@CrossOrigin(origins = "*")
 
 @RestController
 @RequestMapping(value = "/user")
