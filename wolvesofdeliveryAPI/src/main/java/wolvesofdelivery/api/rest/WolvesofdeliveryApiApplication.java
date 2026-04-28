@@ -8,7 +8,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
 @EntityScan(basePackages = {"wolvesofdelivery.api.rest.model"})
@@ -20,10 +22,20 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @RestController
 @EnableAutoConfiguration
 
-public class WolvesofdeliveryApiApplication {
+public class WolvesofdeliveryApiApplication implements WebMvcConfigurer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(WolvesofdeliveryApiApplication.class, args);
+	}
+	
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+		
+		//liberando as requisições POST, PUT, PATCH E GET para todos que acessarem a API
+		registry.addMapping("/**")
+		.allowedMethods("POST", "PUT", "PATCH", "GET")
+		.allowedOrigins("*");
+		
 	}
 
 }

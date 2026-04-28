@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import wolvesofdelivery.api.rest.model.Usuario;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
+
+
+//liberando o acesso para qualquer sistema sera permitido
+@CrossOrigin
 
 @RestController
 @RequestMapping(value = "/user")
@@ -37,7 +42,7 @@ public class IndexController {
 
 	}
 
-	@GetMapping(value = "/all", produces = "application/json")
+	@GetMapping(value = "/allUser", produces = "application/json")
 	public ResponseEntity<List<Usuario>> usuario() {
 		List<Usuario> list = (List<Usuario>) usuarioRepository.findAll();
 
@@ -45,7 +50,7 @@ public class IndexController {
 	}
 
 	// Cadastrando usuario
-	@PostMapping(value = "/createUser/", produces = "Application/json")
+	@PostMapping(value = "/createUser", produces = "Application/json")
 	public ResponseEntity<Usuario> cadastrarusuario(@RequestBody Usuario usuario) {
 
 		// cadastro de usuario
@@ -56,7 +61,7 @@ public class IndexController {
 	}
 
 	// atualizando usuario
-	@PutMapping(value = "/updateUser/", produces = "Application/json")
+	@PutMapping(value = "/updateUser", produces = "Application/json")
 	public ResponseEntity<Usuario> atualizarusuario(@RequestBody Usuario usuario) {
 		Usuario atualizarusuario = usuarioRepository.save(usuario);
 
@@ -72,7 +77,7 @@ public class IndexController {
 	}
 
 	// setando todos os usuarios em ordem crescente por nome
-	@GetMapping(value = "/allDrive/", produces = "Application/json")
+	@GetMapping(value = "/allDrive", produces = "Application/json")
 	public ResponseEntity<List<Usuario>> listarMotoristaPorNome() {
 		List<Usuario> list = usuarioRepository.findByTipoUserOrderByNomeAsc("Motorista");
 
