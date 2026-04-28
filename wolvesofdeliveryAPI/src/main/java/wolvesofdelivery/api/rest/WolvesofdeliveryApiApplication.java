@@ -13,10 +13,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
-@EntityScan(basePackages = {"wolvesofdelivery.api.rest.model"})
+@EntityScan(basePackages = { "wolvesofdelivery.api.rest.model" })
 //tudo que tiver dentro da pasta wolvesofdelivery vai ser configurado
-@ComponentScan(basePackages = {"wolvesofdelivery.*"})
-@EnableJpaRepositories(basePackages = {"wolvesofdelivery.api.rest.repository"})
+@ComponentScan(basePackages = { "wolvesofdelivery.*" })
+@EnableJpaRepositories(basePackages = { "wolvesofdelivery.api.rest.repository" })
 @EnableTransactionManagement
 @RestController
 @EnableAutoConfiguration
@@ -26,11 +26,11 @@ public class WolvesofdeliveryApiApplication implements WebMvcConfigurer {
 	public static void main(String[] args) {
 		SpringApplication.run(WolvesofdeliveryApiApplication.class, args);
 	}
-	
+
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 	    registry.addMapping("/**")
-	        .allowedOrigins("*")
+	        .allowedOriginPatterns("*")
 	        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
 	        .allowedHeaders("*");
 	}

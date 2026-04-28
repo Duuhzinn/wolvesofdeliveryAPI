@@ -17,17 +17,19 @@
 <body>
   <app-root></app-root>
 
-  <script>
-    $(document).ready(
-      function(){
-        $.ajax({
-          url: "https://wolvesofdeliveryapi.onrender.com/wolvesofdeliveryAPI/usuarios",
-          method: "GET"
-        }).then (function(data, status, info) {
-
-        });
+<script>
+  $(document).ready(function () {
+    $.ajax({
+      url: "http://localhost:8080/wolvesofdeliveryAPI/users",
+      method: "GET",
+      success: function (data) {
+        console.log("Resposta:", data);
+      },
+      error: function (err) {
+        console.log("Erro:", err);
       }
-    );
-  </script>
+    });
+  });
+</script>
 </body>
 </html>
