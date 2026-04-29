@@ -29,10 +29,10 @@ public class WolvesofdeliveryApiApplication implements WebMvcConfigurer {
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
-	    registry.addMapping("/wolvesofdeliveryAPI/user/**")
-	        .allowedOriginPatterns("*")
+	    registry.addMapping("/**")
+	        .allowedOriginPatterns("/**")
 	        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-	        .allowedHeaders("*");
+	        .allowedHeaders("/**");
 	}
 
 }
