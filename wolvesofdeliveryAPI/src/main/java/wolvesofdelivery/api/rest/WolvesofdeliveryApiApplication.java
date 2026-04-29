@@ -27,12 +27,4 @@ public class WolvesofdeliveryApiApplication implements WebMvcConfigurer {
 		SpringApplication.run(WolvesofdeliveryApiApplication.class, args);
 	}
 
-	@Override
-	public void addCorsMappings(CorsRegistry registry) {
-	    registry.addMapping("/**")
-	        .allowedOriginPatterns("*")   
-	        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-	        .allowedHeaders("*");          
-	}
-
 }
