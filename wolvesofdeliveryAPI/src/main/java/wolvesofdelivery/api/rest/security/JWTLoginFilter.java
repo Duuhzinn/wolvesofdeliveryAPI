@@ -40,9 +40,6 @@ public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
             FilterChain chain, Authentication authResult) throws IOException, ServletException {
 
-        System.out.println("=== LOGIN BEM SUCEDIDO ===");
-        System.out.println("Usuario: " + authResult.getName());
-
         String username = authResult.getName();
         try {
             jwtTokenAutenticacaoService.addAuthentication(response, username);
