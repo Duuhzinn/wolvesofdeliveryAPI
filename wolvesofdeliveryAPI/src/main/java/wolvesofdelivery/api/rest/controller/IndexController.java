@@ -36,6 +36,8 @@ public class IndexController {
 	@Autowired
 	private RoleRepository roleRepository;
 
+	//__________________________________________CONSULTANDO USUÁRIO_________________________________________________________//
+	
 	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<Usuario> init(@PathVariable(value = "id") Long id) {
 
@@ -49,8 +51,9 @@ public class IndexController {
 		List<Usuario> list = (List<Usuario>) usuarioRepository.findAll();
 		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);
 	}
-
-	// Cadastrando usuario
+	
+	//__________________________________________CADASTRANDO USUÁRIO_________________________________________________________//
+	
 	@PostMapping(value = "/createUser", produces = "Application/json")
 	public ResponseEntity<?> cadastrarusuario(@RequestBody Usuario usuario) {
 
@@ -72,32 +75,35 @@ public class IndexController {
 	    Usuario usuarioSalvo = usuarioRepository.save(usuario);
 	    return new ResponseEntity<>(usuarioSalvo, HttpStatus.OK);
 	}
-
-	// atualizando usuario
+	
+	//__________________________________________ATUALIZANDO DADOS USUÁRIO_________________________________________________________//
+	
 	@PutMapping(value = "/updateUser", produces = "Application/json")
-	public ResponseEntity<Usuario> atualizarusuario(@RequestBody Usuario usuario) {
-		Usuario atualizarusuario = usuarioRepository.save(usuario);
-
-		return new ResponseEntity<Usuario>(atualizarusuario, HttpStatus.OK);
+	public ResponseEntity<?> atualizausuario(@RequestBody Usuario usuario){
+		
+		// Busca o usuário atual do banco
+		Usuario usuarioAtual = usuarioRepository.findById(usuario.getId())
+				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+		
+		// Atualiza apenas os campos permitidos
+		usuarioAtual.setEmail(usuario.getEmail());
+		usuarioAtual.setEndereco(usuario.getEndereco());
+		usuarioAtual.setLogin(usuario.getLogin());
+		usuarioAtual.setNome(usuario.getNome());
+		usuarioAtual.setTelefone(usuario.getTelefone());
+		usuarioAtual.setTipoUser(usuario.getTipoUser());
+		
+		if (usuario.getSenha() != null && !usuario.getSenha().isEmpty()) {
+			usuarioAtual.setSenha(new BCryptPasswordEncoder().encode(usuario.getSenha()));
+		}
+		
+		Usuario usuarioAtualizado = usuarioRepository.save(usuarioAtual);
+		return new ResponseEntity<>(usuarioAtualizado, HttpStatus.OK);
+		
 	}
+	
+	//__________________________________________ALTERANDO STATUS DO USUÁRIO SELECIONADO_________________________________________________________//
 
-	// setando usuario do tipo motorista com ordem crecscente na posição da fila
-	@GetMapping(value = "/queuePosition/", produces = "Application/json")
-	public ResponseEntity<List<Usuario>> listarposicaofila() {
-		List<Usuario> list = usuarioRepository.findByTipoUser("Motorista", Sort.by("posicaofila").ascending());
-
-		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);
-	}
-
-	// setando todos os usuarios em ordem crescente por nome
-	@GetMapping(value = "/allDrive", produces = "Application/json")
-	public ResponseEntity<List<Usuario>> listarMotoristaPorNome() {
-		List<Usuario> list = usuarioRepository.findByTipoUserOrderByNomeAsc("Motorista");
-
-		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);
-	}
-
-	// altera status do id selecionado
 	@PatchMapping(value = "/changeStatus/{id}", produces = "application/json")
 	public ResponseEntity<Usuario> alterarStatus(@PathVariable Long id) {
 
