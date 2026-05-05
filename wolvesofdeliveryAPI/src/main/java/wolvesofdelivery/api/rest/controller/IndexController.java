@@ -28,7 +28,7 @@ import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 @CrossOrigin(origins = "*")
 
 @RestController
-@RequestMapping(value = "/users")
+@RequestMapping(value = "/v1/users")
 public class IndexController {
 
 	@Autowired
