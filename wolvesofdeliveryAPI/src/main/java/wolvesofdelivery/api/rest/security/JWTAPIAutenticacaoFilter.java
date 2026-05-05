@@ -22,7 +22,8 @@ public class JWTAPIAutenticacaoFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.equals("/wolvesofdeliveryAPI/login") || path.equals("/login");
+        boolean skip = path.equals("/wolvesofdeliveryAPI/login"); 
+        return skip;
     }
 
     @Override
@@ -30,9 +31,6 @@ public class JWTAPIAutenticacaoFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain)
             throws ServletException, IOException {
-
-        System.out.println("TOKEN HEADER: " + request.getHeader("Authorization"));
-        System.out.println("URI: " + request.getRequestURI());
 
         Authentication authentication =
                 jwtTokenAutenticacaoService.getAuthentication(request);

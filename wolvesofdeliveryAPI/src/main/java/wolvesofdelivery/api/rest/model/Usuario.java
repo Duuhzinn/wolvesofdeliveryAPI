@@ -1,6 +1,5 @@
 package wolvesofdelivery.api.rest.model;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,7 +8,6 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -23,10 +21,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinColumns;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.UniqueConstraint;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @JsonPropertyOrder({
     "id",
@@ -129,6 +128,7 @@ public class Usuario implements UserDetails {
 		this.login = login;
 	}
 
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	public String getSenha() {
 		return senha;
 	}
@@ -218,6 +218,7 @@ public class Usuario implements UserDetails {
 		return roles;
 	}
 
+	@JsonIgnore
 	@Override
 	public @Nullable String getPassword() {
 		// TODO Auto-generated method stub
@@ -244,10 +245,9 @@ public class Usuario implements UserDetails {
 	public boolean isCredentialsNonExpired() {
 	    return true;
 	}
-
-	@Override
-	public boolean isEnabled() {
-	    return this.status != null && this.status == 1;
+	
+	public void setRoles(List<Role> roles) {
+	    this.roles = roles;
 	}
 
 }

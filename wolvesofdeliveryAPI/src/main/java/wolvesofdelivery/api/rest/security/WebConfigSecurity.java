@@ -29,30 +29,22 @@ public class WebConfigSecurity {
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
             AuthenticationManager authenticationManager) throws Exception {
     	
-        http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // ✅ API REST não usa sessão
-                )
-
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/",
-                    "/index",
-                    "/login"
-                ).permitAll()
-                .anyRequest().authenticated()
-            )
-
-            .addFilterBefore(
-                new JWTLoginFilter(authenticationManager, jwtTokenAutenticacaoService), // ✅ login primeiro
-                UsernamePasswordAuthenticationFilter.class
-            )
-
-            .addFilterBefore(
-                new JWTAPIAutenticacaoFilter(jwtTokenAutenticacaoService), // ✅ validação depois
-                UsernamePasswordAuthenticationFilter.class
-            );
+    	http
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+        	.requestMatchers("/", "/index", "/login").permitAll()
+            .anyRequest().authenticated()
+        )
+        .addFilterBefore(
+        	new JWTLoginFilter(authenticationManager, jwtTokenAutenticacaoService),
+        	   UsernamePasswordAuthenticationFilter.class
+        )
+        .addFilterAfter(
+        	new JWTAPIAutenticacaoFilter(jwtTokenAutenticacaoService),
+        	UsernamePasswordAuthenticationFilter.class  // <- mude para isso
+        );
 
         return http.build();
     }

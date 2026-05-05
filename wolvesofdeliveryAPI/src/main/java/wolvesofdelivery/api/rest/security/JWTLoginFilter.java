@@ -21,7 +21,7 @@ public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
 
     public JWTLoginFilter(AuthenticationManager authenticationManager,
             JWTTokenAutenticacaoService jwtTokenAutenticacaoService) {
-        super("/login"); // ✅ substitui o AntPathRequestMatcher("/login")
+    	super("/login"); // ✅ substitui o AntPathRequestMatcher("/login")
         setAuthenticationManager(authenticationManager);
         this.jwtTokenAutenticacaoService = jwtTokenAutenticacaoService;
     }
@@ -29,9 +29,7 @@ public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-
         Usuario usuario = new ObjectMapper().readValue(request.getInputStream(), Usuario.class);
-
         return getAuthenticationManager()
                 .authenticate(new UsernamePasswordAuthenticationToken(usuario.getLogin(), usuario.getSenha()));
     }

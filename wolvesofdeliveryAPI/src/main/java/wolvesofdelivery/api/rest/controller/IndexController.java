@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import wolvesofdelivery.api.rest.model.Role;
 import wolvesofdelivery.api.rest.model.Usuario;
+import wolvesofdelivery.api.rest.repository.RoleRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 
 //liberando o acesso para qualquer sistema sera permitido
@@ -30,6 +33,8 @@ public class IndexController {
 
 	@Autowired
 	private UsuarioRepository usuarioRepository;
+	@Autowired
+	private RoleRepository roleRepository;
 
 	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<Usuario> init(@PathVariable(value = "id") Long id) {
@@ -49,13 +54,25 @@ public class IndexController {
 
 	// Cadastrando usuario
 	@PostMapping(value = "/createUser", produces = "Application/json")
-	public ResponseEntity<Usuario> cadastrarusuario(@RequestBody Usuario usuario) {
+	public ResponseEntity<?> cadastrarusuario(@RequestBody Usuario usuario) {
 
-		// cadastro de usuario
-		Usuario usuarioSalvo = usuarioRepository.save(usuario);
+	    // Criptografa a senha
+	    usuario.setSenha(new BCryptPasswordEncoder().encode(usuario.getSenha()));
 
-		return new ResponseEntity<Usuario>(usuarioSalvo, HttpStatus.OK);
+	    // Associa a role baseada no tipoUser
+	    String nomeRole;
+	    switch (usuario.getTipoUser()) {
+        case "Admin":     nomeRole = "ROLE_ADMIN"; break;
+        case "Motorista": nomeRole = "ROLE_MOTORISTA"; break;
+        case "Cliente":   nomeRole = "ROLE_CLIENTE"; break;
+        default:
+            return new ResponseEntity<>("tipoUser inválido. Use: Admin, Motorista ou Cliente", HttpStatus.BAD_REQUEST);
+    }
+	    Role role = roleRepository.findByNomeRole(nomeRole);
+	    usuario.setRoles(List.of(role));
 
+	    Usuario usuarioSalvo = usuarioRepository.save(usuario);
+	    return new ResponseEntity<>(usuarioSalvo, HttpStatus.OK);
 	}
 
 	// atualizando usuario
