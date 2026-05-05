@@ -39,7 +39,6 @@ public class JWTTokenAutenticacaoService {
                 .compact();
 
         response.addHeader(HEADER_STRING, TOKEN_PREFIX + JWT);
-
         response.setContentType("application/json");
         response.getWriter().write("{\"Authorization\": \"" + TOKEN_PREFIX + JWT + "\"}");
     }

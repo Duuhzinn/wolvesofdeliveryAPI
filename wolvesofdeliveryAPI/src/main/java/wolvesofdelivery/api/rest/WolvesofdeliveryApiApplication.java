@@ -23,7 +23,6 @@ public class WolvesofdeliveryApiApplication implements WebMvcConfigurer {
 
     public static void main(String[] args) {
         SpringApplication.run(WolvesofdeliveryApiApplication.class, args);
-        System.out.println(new BCryptPasswordEncoder().encode("123"));
     }
 
     // ✅ libera o CORS para requisições externas (Postman, frontend, mobile)

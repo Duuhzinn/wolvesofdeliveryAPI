@@ -40,7 +40,6 @@ public class IndexController {
 	public ResponseEntity<Usuario> init(@PathVariable(value = "id") Long id) {
 
 		Optional<Usuario> usuario = usuarioRepository.findById(id);
-
 		return new ResponseEntity<Usuario>(usuario.get(), HttpStatus.OK);
 
 	}
@@ -48,7 +47,6 @@ public class IndexController {
 	@GetMapping(value = "/allUser", produces = "application/json")
 	public ResponseEntity<List<Usuario>> usuario() {
 		List<Usuario> list = (List<Usuario>) usuarioRepository.findAll();
-
 		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);
 	}
 
