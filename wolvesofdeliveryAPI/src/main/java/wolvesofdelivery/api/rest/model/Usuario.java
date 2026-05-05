@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -27,227 +28,211 @@ import jakarta.persistence.UniqueConstraint;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@JsonPropertyOrder({
-    "id",
-    "nome",
-    "login",
-    "senha",
-    "email",
-    "telefone",
-    "endereco",
-    "tipoUser",
-    "status",
-    "posicaofila",
-    "clientes",
-    "corridas",
-    "token"
-})
+@JsonPropertyOrder({ "id", "nome", "login", "email", "telefone", "endereco", "tipoUser", "status", "posicaofila" })
+// ALTERADO: removido "senha", "clientes", "corridas", "token" do JsonPropertyOrder
 
 @Entity
 public class Usuario implements UserDetails {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
-	private String login;
-	private String senha;
-	private String telefone;
-	private String nome;
-	private String email;
-	private String endereco;
-	private String tipoUser;
-	private Long status;
-	private Timestamp posicaofila;
+    private String login;
+    private String senha;
+    private String telefone;
+    private String nome;
+    private String email;
+    private String endereco;
+    private String tipoUser;
+    private Long status;
+    private Timestamp posicaofila;
 
-	// mapeando a chave estrangeira e quando deletar o usuario, ele deleta todos os
-	// motorista junto
-	@OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
-	private List<Corridas> corridas = new ArrayList<Corridas>();
-	
-	@OneToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "user_role", uniqueConstraints = @UniqueConstraint (
-			columnNames = {"usuario_id","role_id"}, name = "unique_role_user"),
-	joinColumns = @JoinColumn(name = "usuario_id", referencedColumnName = "id", table = "usuario", unique = false,
-	foreignKey = @ForeignKey(name = "usuario_fk", value = ConstraintMode.CONSTRAINT)),
-	
-			inverseJoinColumns =@JoinColumn(name = "role_id", referencedColumnName = "id", table = "role", unique = false,
-			foreignKey = @ForeignKey(name = "role_fk", value = ConstraintMode.CONSTRAINT)))
-	
-	private List<Role> roles;
+    @OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<Corridas> corridas = new ArrayList<Corridas>();
 
-	
-	
-	public List<Corridas> getCorridas() {
-		return corridas;
-	}
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_role", uniqueConstraints = @UniqueConstraint(columnNames = { "usuario_id",
+            "role_id" }, name = "unique_role_user"), joinColumns = @JoinColumn(name = "usuario_id", referencedColumnName = "id", table = "usuario", unique = false, foreignKey = @ForeignKey(name = "usuario_fk", value = ConstraintMode.CONSTRAINT)),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id", table = "role", unique = false, foreignKey = @ForeignKey(name = "role_fk", value = ConstraintMode.CONSTRAINT)))
+    private List<Role> roles;
 
-	public void setCorridas(List<Corridas> corridas) {
-		this.corridas = corridas;
-	}
+    @JsonIgnore // já estava
+    public List<Corridas> getCorridas() {
+        return corridas;
+    }
 
-	@OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
-	private List<Firebasetoken> token = new ArrayList<Firebasetoken>();
+    public void setCorridas(List<Corridas> corridas) {
+        this.corridas = corridas;
+    }
 
-	public List<Firebasetoken> getToken() {
-		return token;
-	}
+    @OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<Firebasetoken> token = new ArrayList<Firebasetoken>();
 
-	public void setToken(List<Firebasetoken> token) {
-		this.token = token;
-	}
+    @JsonIgnore // já estava
+    public List<Firebasetoken> getToken() {
+        return token;
+    }
 
-	@OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
-	private List<Clientes> clientes = new ArrayList<Clientes>();
+    public void setToken(List<Firebasetoken> token) {
+        this.token = token;
+    }
 
-	public List<Clientes> getClientes() {
-		return clientes;
-	}
-	
-	
+    @OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<Clientes> clientes = new ArrayList<Clientes>();
 
-	public void setClientes(List<Clientes> clientes) {
-		this.clientes = clientes;
-	}
+    @JsonIgnore // já estava
+    public List<Clientes> getClientes() {
+        return clientes;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public void setClientes(List<Clientes> clientes) {
+        this.clientes = clientes;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public String getLogin() {
-		return login;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public void setLogin(String login) {
-		this.login = login;
-	}
+    @Column(unique = true)
+    public String getLogin() {
+        return login;
+    }
 
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	public String getSenha() {
-		return senha;
-	}
+    public void setLogin(String login) {
+        this.login = login;
+    }
 
-	public void setSenha(String senha) {
-		this.senha = senha;
-	}
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    public String getSenha() {
+        return senha;
+    }
 
-	public String getTelefone() {
-		return telefone;
-	}
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
 
-	public void setTelefone(String telefone) {
-		this.telefone = telefone;
-	}
+    public String getTelefone() {
+        return telefone;
+    }
 
-	public String getNome() {
-		return nome;
-	}
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
 
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
+    public String getNome() {
+        return nome;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public String getEndereco() {
-		return endereco;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public void setEndereco(String endereco) {
-		this.endereco = endereco;
-	}
+    public String getEndereco() {
+        return endereco;
+    }
 
-	public String getTipoUser() {
-		return tipoUser;
-	}
+    public void setEndereco(String endereco) {
+        this.endereco = endereco;
+    }
 
-	public void setTipoUser(String tipoUser) {
-		this.tipoUser = tipoUser;
-	}
+    public String getTipoUser() {
+        return tipoUser;
+    }
 
-	public Long getStatus() {
-		return status;
-	}
+    public void setTipoUser(String tipoUser) {
+        this.tipoUser = tipoUser;
+    }
 
-	public void setStatus(Long status) {
-		this.status = status;
-	}
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    public Long getStatus() {
+        return status;
+    }
 
-	public Timestamp getPosicaofila() {
-		return posicaofila;
-	}
+    public void setStatus(Long status) {
+        this.status = status;
+    }
 
-	public void setPosicaofila(Timestamp posicaofila) {
-		this.posicaofila = posicaofila;
-	}
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    public Timestamp getPosicaofila() {
+        return posicaofila;
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(id);
-	}
+    public void setPosicaofila(Timestamp posicaofila) {
+        this.posicaofila = posicaofila;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Usuario other = (Usuario) obj;
-		return Objects.equals(id, other.id);
-	}
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 
-	
-	//são os acessos do usuario ROLE_ADMIN, ROLE_MOTORISTA, ROLE_CLIENTE
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// TODO Auto-generated method stub
-		return roles;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        Usuario other = (Usuario) obj;
+        return Objects.equals(id, other.id);
+    }
 
-	@JsonIgnore
-	@Override
-	public @Nullable String getPassword() {
-		// TODO Auto-generated method stub
-		return this.senha;
-	}
+    @JsonIgnore 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles;
+    }
 
-	@Override
-	public String getUsername() {
-		// TODO Auto-generated method stub
-		return this.login;
-	}
-	
-	@Override
-	public boolean isAccountNonExpired() {
-	    return true;
-	}
+    @JsonIgnore // já estava
+    @Override
+    public @Nullable String getPassword() {
+        return this.senha;
+    }
 
-	@Override
-	public boolean isAccountNonLocked() {
-	    return true;
-	}
+    @JsonIgnore // já estava
+    @Override
+    public String getUsername() {
+        return this.login;
+    }
 
-	@Override
-	public boolean isCredentialsNonExpired() {
-	    return true;
-	}
-	
-	public void setRoles(List<Role> roles) {
-	    this.roles = roles;
-	}
+    @JsonIgnore // já estava
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
+    @JsonIgnore // já estava
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @JsonIgnore // já estava
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @JsonIgnore // ADICIONADO: isEnabled estava faltando!
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    public void setRoles(List<Role> roles) { // ALTERADO: removido @JsonIgnore do setter
+        this.roles = roles;
+    }
 }
