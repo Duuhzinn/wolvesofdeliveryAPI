@@ -33,7 +33,7 @@ public class JWTAPIAutenticacaoFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         Authentication authentication =
-                jwtTokenAutenticacaoService.getAuthentication(request);
+                jwtTokenAutenticacaoService.getAuthentication(request, (HttpServletResponse) response);
 
         if (authentication != null) {
             SecurityContextHolder.getContext().setAuthentication(authentication);
