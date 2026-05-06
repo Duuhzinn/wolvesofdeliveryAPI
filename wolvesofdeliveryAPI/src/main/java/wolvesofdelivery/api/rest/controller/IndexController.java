@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +40,7 @@ public class IndexController {
 
 	//__________________________________________CONSULTANDO USUÁRIO_________________________________________________________//
 	
+	@Cacheable("usuariosId") // armazena o resultado no cache para melhorar a velocidade de processamento
 	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<Usuario> init(@PathVariable(value = "id") Long id) {
 
@@ -46,6 +49,9 @@ public class IndexController {
 
 	}
 
+	//__________________________________________CONSULTANDO TODOS USUÁRIO_________________________________________________________//
+	
+	@Cacheable("listaUsuarios") // armazena o resultado no cache para melhorar a velocidade de processamento
 	@GetMapping(value = "/allUser", produces = "application/json")
 	public ResponseEntity<List<Usuario>> usuario() {
 		List<Usuario> list = (List<Usuario>) usuarioRepository.findAll();
@@ -54,6 +60,7 @@ public class IndexController {
 	
 	//__________________________________________CADASTRANDO USUÁRIO_________________________________________________________//
 	
+	@CacheEvict(value = "listaUsuarios", allEntries = true) // Limpa o Cachea ao Criar
 	@PostMapping(value = "/createUser", produces = "Application/json")
 	public ResponseEntity<?> cadastrarusuario(@RequestBody Usuario usuario) {
 
@@ -78,6 +85,7 @@ public class IndexController {
 	
 	//__________________________________________ATUALIZANDO DADOS USUÁRIO_________________________________________________________//
 	
+	@CacheEvict(value = {"usuariosId", "listaUsuarios"}, allEntries = true) // Limpa ao atualizar
 	@PutMapping(value = "/updateUser", produces = "Application/json")
 	public ResponseEntity<?> atualizausuario(@RequestBody Usuario usuario){
 		
@@ -104,6 +112,7 @@ public class IndexController {
 	
 	//__________________________________________ALTERANDO STATUS DO USUÁRIO SELECIONADO_________________________________________________________//
 
+	@CacheEvict(value = {"usuarios", "listaUsuarios"}, allEntries = true) // Limpa ao alterar
 	@PatchMapping(value = "/changeStatus/{id}", produces = "application/json")
 	public ResponseEntity<Usuario> alterarStatus(@PathVariable Long id) {
 
