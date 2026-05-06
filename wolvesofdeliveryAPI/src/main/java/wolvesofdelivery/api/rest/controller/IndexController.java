@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,8 @@ public class IndexController {
 
 	//__________________________________________CONSULTANDO USUÁRIO_________________________________________________________//
 	
-	@Cacheable("usuariosId") // armazena o resultado no cache para melhorar a velocidade de processamento
+	@CacheEvict(value = "cacheUser", allEntries = true) //se tiver cache que nao é usado, vai remover
+	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
 	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<Usuario> init(@PathVariable(value = "id") Long id) {
 
@@ -51,7 +53,8 @@ public class IndexController {
 
 	//__________________________________________CONSULTANDO TODOS USUÁRIO_________________________________________________________//
 	
-	@Cacheable("listaUsuarios") // armazena o resultado no cache para melhorar a velocidade de processamento
+	@CacheEvict(value = "cacheUser", allEntries = true) //se tiver cache que nao é usado, vai remover
+	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
 	@GetMapping(value = "/allUser", produces = "application/json")
 	public ResponseEntity<List<Usuario>> usuario() {
 		List<Usuario> list = (List<Usuario>) usuarioRepository.findAll();
@@ -60,7 +63,8 @@ public class IndexController {
 	
 	//__________________________________________CADASTRANDO USUÁRIO_________________________________________________________//
 	
-	@CacheEvict(value = "listaUsuarios", allEntries = true) // Limpa o Cachea ao Criar
+	@CacheEvict(value = "cacheUser", allEntries = true) //se tiver cache que nao é usado, vai remover
+	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
 	@PostMapping(value = "/createUser", produces = "Application/json")
 	public ResponseEntity<?> cadastrarusuario(@RequestBody Usuario usuario) {
 
@@ -85,7 +89,8 @@ public class IndexController {
 	
 	//__________________________________________ATUALIZANDO DADOS USUÁRIO_________________________________________________________//
 	
-	@CacheEvict(value = {"usuariosId", "listaUsuarios"}, allEntries = true) // Limpa ao atualizar
+	@CacheEvict(value = "cacheUser", allEntries = true) //se tiver cache que nao é usado, vai remover
+	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
 	@PutMapping(value = "/updateUser", produces = "Application/json")
 	public ResponseEntity<?> atualizausuario(@RequestBody Usuario usuario){
 		
@@ -112,7 +117,8 @@ public class IndexController {
 	
 	//__________________________________________ALTERANDO STATUS DO USUÁRIO SELECIONADO_________________________________________________________//
 
-	@CacheEvict(value = {"usuarios", "listaUsuarios"}, allEntries = true) // Limpa ao alterar
+	@CacheEvict(value = "cacheUser", allEntries = true) //se tiver cache que nao é usado, vai remover
+	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
 	@PatchMapping(value = "/changeStatus/{id}", produces = "application/json")
 	public ResponseEntity<Usuario> alterarStatus(@PathVariable Long id) {
 
