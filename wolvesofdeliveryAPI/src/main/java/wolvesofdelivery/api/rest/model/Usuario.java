@@ -34,205 +34,207 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 public class Usuario implements UserDetails {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long id;
 
-    private String login;
-    private String senha;
-    private String telefone;
-    private String nome;
-    private String email;
-    private String endereco;
-    private String tipoUser;
-    private Long status;
-    private Timestamp posicaofila;
+	private String login;
+	private String senha;
+	private String telefone;
+	private String nome;
+	private String email;
+	private String endereco;
+	private String tipoUser;
+	private Long status;
+	private Timestamp posicaofila;
 
-    @OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<Corridas> corridas = new ArrayList<Corridas>();
+	@OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
+	private List<Corridas> corridas = new ArrayList<Corridas>();
 
-    @OneToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_role", uniqueConstraints = @UniqueConstraint(columnNames = { "usuario_id",
-            "role_id" }, name = "unique_role_user"), joinColumns = @JoinColumn(name = "usuario_id", referencedColumnName = "id", table = "usuario", unique = false, foreignKey = @ForeignKey(name = "usuario_fk", value = ConstraintMode.CONSTRAINT)),
-            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id", table = "role", unique = false, foreignKey = @ForeignKey(name = "role_fk", value = ConstraintMode.CONSTRAINT)))
-    private List<Role> roles;
+	@OneToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "user_role", uniqueConstraints = @UniqueConstraint(columnNames = { "usuario_id",
+			"role_id" }, name = "unique_role_user"), joinColumns = @JoinColumn(name = "usuario_id", referencedColumnName = "id", table = "usuario", unique = false, foreignKey = @ForeignKey(name = "usuario_fk", value = ConstraintMode.CONSTRAINT)), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id", table = "role", unique = false, foreignKey = @ForeignKey(name = "role_fk", value = ConstraintMode.CONSTRAINT)))
+	private List<Role> roles;
 
-    @JsonIgnore // já estava
-    public List<Corridas> getCorridas() {
-        return corridas;
-    }
+	@JsonIgnore // já estava
+	public List<Corridas> getCorridas() {
+		return corridas;
+	}
 
-    public void setCorridas(List<Corridas> corridas) {
-        this.corridas = corridas;
-    }
+	public void setCorridas(List<Corridas> corridas) {
+		this.corridas = corridas;
+	}
 
-    @OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<Firebasetoken> token = new ArrayList<Firebasetoken>();
+	@OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
+	private List<Firebasetoken> token = new ArrayList<Firebasetoken>();
 
-    @JsonIgnore // já estava
-    public List<Firebasetoken> getToken() {
-        return token;
-    }
+	@JsonIgnore // já estava
+	public List<Firebasetoken> getToken() {
+		return token;
+	}
 
-    public void setToken(List<Firebasetoken> token) {
-        this.token = token;
-    }
+	public void setToken(List<Firebasetoken> token) {
+		this.token = token;
+	}
 
-    @OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<Clientes> clientes = new ArrayList<Clientes>();
+	@OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
+	private List<Clientes> clientes = new ArrayList<Clientes>();
 
-    @JsonIgnore // já estava
-    public List<Clientes> getClientes() {
-        return clientes;
-    }
+	@JsonIgnore // já estava
+	public List<Clientes> getClientes() {
+		return clientes;
+	}
 
-    public void setClientes(List<Clientes> clientes) {
-        this.clientes = clientes;
-    }
+	public void setClientes(List<Clientes> clientes) {
+		this.clientes = clientes;
+	}
 
-    public Long getId() {
-        return id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    @Column(unique = true)
-    public String getLogin() {
-        return login;
-    }
+	@Column(unique = true)
+	public String getLogin() {
+		return login;
+	}
 
-    public void setLogin(String login) {
-        this.login = login;
-    }
+	public void setLogin(String login) {
+		this.login = login;
+	}
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    public String getSenha() {
-        return senha;
-    }
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	public String getSenha() {
+		return senha;
+	}
 
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
+	public void setSenha(String senha) {
+		this.senha = senha;
+	}
 
-    public String getTelefone() {
-        return telefone;
-    }
+	public String getTelefone() {
+		return telefone;
+	}
 
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
-    }
+	public void setTelefone(String telefone) {
+		this.telefone = telefone;
+	}
 
-    public String getNome() {
-        return nome;
-    }
+	public String getNome() {
+		return nome;
+	}
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
 
-    public String getEmail() {
-        return email;
-    }
+	public String getEmail() {
+		return email;
+	}
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
-    public String getEndereco() {
-        return endereco;
-    }
+	public String getEndereco() {
+		return endereco;
+	}
 
-    public void setEndereco(String endereco) {
-        this.endereco = endereco;
-    }
+	public void setEndereco(String endereco) {
+		this.endereco = endereco;
+	}
 
-    public String getTipoUser() {
-        return tipoUser;
-    }
+	public String getTipoUser() {
+		return tipoUser;
+	}
 
-    public void setTipoUser(String tipoUser) {
-        this.tipoUser = tipoUser;
-    }
+	public void setTipoUser(String tipoUser) {
+		this.tipoUser = tipoUser;
+	}
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    public Long getStatus() {
-        return status;
-    }
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	public Long getStatus() {
+		return status;
+	}
 
-    public void setStatus(Long status) {
-        this.status = status;
-    }
+	public void setStatus(Long status) {
+		this.status = status;
+	}
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    public Timestamp getPosicaofila() {
-        return posicaofila;
-    }
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	public Timestamp getPosicaofila() {
+		return posicaofila;
+	}
 
-    public void setPosicaofila(Timestamp posicaofila) {
-        this.posicaofila = posicaofila;
-    }
+	public void setPosicaofila(Timestamp posicaofila) {
+		this.posicaofila = posicaofila;
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        Usuario other = (Usuario) obj;
-        return Objects.equals(id, other.id);
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Usuario other = (Usuario) obj;
+		return Objects.equals(id, other.id);
+	}
 
-    @JsonIgnore 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles;
-    }
+	@JsonIgnore
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return roles;
+	}
 
-    @JsonIgnore // já estava
-    @Override
-    public @Nullable String getPassword() {
-        return this.senha;
-    }
+	@JsonIgnore // já estava
+	@Override
+	public @Nullable String getPassword() {
+		return this.senha;
+	}
 
-    @JsonIgnore // já estava
-    @Override
-    public String getUsername() {
-        return this.login;
-    }
+	@JsonIgnore // já estava
+	@Override
+	public String getUsername() {
+		return this.login;
+	}
 
-    @JsonIgnore // já estava
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+	@JsonIgnore // já estava
+	@Override
+	public boolean isAccountNonExpired() {
+		return true;
+	}
 
-    @JsonIgnore // já estava
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+	@JsonIgnore // já estava
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
 
-    @JsonIgnore // já estava
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+	@JsonIgnore // já estava
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
 
-    @JsonIgnore // ADICIONADO: isEnabled estava faltando!
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+	@JsonIgnore // ADICIONADO: isEnabled estava faltando!
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
 
-    public void setRoles(List<Role> roles) { // ALTERADO: removido @JsonIgnore do setter
-        this.roles = roles;
-    }
+	public void setRoles(List<Role> roles) { // ALTERADO: removido @JsonIgnore do setter
+		this.roles = roles;
+	}
 }

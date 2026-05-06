@@ -22,8 +22,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import wolvesofdelivery.api.rest.model.Firebasetoken;
 import wolvesofdelivery.api.rest.model.Role;
 import wolvesofdelivery.api.rest.model.Usuario;
+import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.RoleRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 
@@ -139,5 +141,35 @@ public class IndexController {
 		return new ResponseEntity<Usuario>(atualizarusuario, HttpStatus.OK);
 
 	}
+	
+	//__________________________________________SALVANDO TOKEN FIREBASE NO BANCO DE DADOS DO USUARIO_________________________________________________________//
+	
+	@Autowired
+	private FirebasetokenRepository firebasetokenRepository;
 
+	@CacheEvict(value = {"usuarios", "listaUsuarios"}, allEntries = true)
+	@PostMapping(value = "/saveToken/{usuarioId}", produces = "application/json")
+	public ResponseEntity<?> salvarToken(@PathVariable Long usuarioId,
+											@RequestBody Firebasetoken firebasetoken){
+		
+		Usuario usuario = usuarioRepository.findById(usuarioId)
+				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+		
+		// VERIFICA SE JA EXISTE TOKEN PARA ESSE USUÁRIO
+		Firebasetoken tokenExistente = firebasetokenRepository.findByUsuarioId(usuarioId);
+		
+		if (tokenExistente != null) {
+			//ATUALIZA O TOKEN EXISTENTE
+			tokenExistente.setToken(firebasetoken.getToken());
+			firebasetokenRepository.save(tokenExistente);
+		} else {
+			//INSERE UM NOVO TOKEN
+			firebasetoken.setUsuario(usuario);
+			firebasetokenRepository.save(firebasetoken);
+		}
+		
+		return new ResponseEntity<>("Token salvo com sucesso!", HttpStatus.OK);
+		
+	}
+	
 }
