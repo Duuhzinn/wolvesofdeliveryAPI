@@ -75,7 +75,7 @@ public class JWTTokenAutenticacaoService {
 	}
 
 	// METODO DE LIBERAÇÃO DE CORS
-	private void liberacaoCors(HttpServletResponse response) {
+	public void liberacaoCors(HttpServletResponse response) {
 
 		if (response.getHeader("Access-Control-Allow-Origin") == null) {
 			response.addHeader("Access-Control-Allow-Origin", "*");

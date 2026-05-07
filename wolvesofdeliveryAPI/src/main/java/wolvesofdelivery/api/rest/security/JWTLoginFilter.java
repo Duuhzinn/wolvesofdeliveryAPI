@@ -45,4 +45,20 @@ public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
             e.printStackTrace();
         }
     }
+    
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+    		org.springframework.security.core.AuthenticationException failed) throws IOException, ServletException{
+    	
+    	System.out.println("Login Falhou" + failed.getMessage());
+    	
+    	response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); //401
+    	response.setContentType("application/json");
+    	response.setCharacterEncoding("UTF-8");
+    	
+    	//LIBERANDO CORS
+    	jwtTokenAutenticacaoService.liberacaoCors(response);
+    	
+    	response.getWriter().write("{\"error\": \"Login ou senha inválidos\", \"code\": \"401 ==> Unauthorized\"}");
+    }
+    	
 }
