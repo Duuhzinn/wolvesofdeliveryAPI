@@ -10,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +21,7 @@ import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 @Service
 public class JWTTokenAutenticacaoService {
 
-	private static final long EXPIRATION_TIME = 172800000;
+	private static final long EXPIRATION_TIME = 60000;
 	private static final String SECRET = "wolvesofdelivery-chave-secreta-jwt-2026";
 	private static final String TOKEN_PREFIX = "Bearer ";
 	private static final String HEADER_STRING = "Authorization";
@@ -64,6 +65,19 @@ public class JWTTokenAutenticacaoService {
 					}
 				}
 
+			} catch (io.jsonwebtoken.ExpiredJwtException e) {
+				try {
+			        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+			        response.setContentType("application/json");
+			        response.setCharacterEncoding("UTF-8");
+			        response.getWriter().write("{\"error\": \"Token expirado\", \"code\": \"401 ==> Unauthorized\", \"mensagem\": \"Seu token está expirado, faça o login novamente!\"}");
+			        response.getWriter().flush();
+				} catch (IOException e1) {
+
+				}
+				
+				return null;
+				
 			} catch (Exception e) {
 				return null;
 			}
