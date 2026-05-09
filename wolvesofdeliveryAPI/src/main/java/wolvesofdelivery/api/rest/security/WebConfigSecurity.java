@@ -13,8 +13,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import wolvesofdelivery.api.rest.service.ImplementacaoUserDetailsService;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -29,27 +34,50 @@ public class WebConfigSecurity {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
             AuthenticationManager authenticationManager) throws Exception {
-    	
-    	http
-        .csrf(csrf -> csrf.disable())
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
-        	.requestMatchers("/", "/index", "/login").permitAll()
-        	.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <- correto
-            .anyRequest().authenticated()
-        )
-        
-        .addFilterBefore(
-        	new JWTLoginFilter(authenticationManager, jwtTokenAutenticacaoService),
-        	   UsernamePasswordAuthenticationFilter.class
-        )
-        .addFilterAfter(
-        	new JWTAPIAutenticacaoFilter(jwtTokenAutenticacaoService),
-        	UsernamePasswordAuthenticationFilter.class  // <- mude para isso
-        );
+
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/", "/index",
+                                 "/wolvesofdeliveryAPI/login",
+                                 "/login").permitAll()
+                .anyRequest().authenticated()
+            )
+            .addFilterBefore(
+                new JWTLoginFilter(authenticationManager, jwtTokenAutenticacaoService),
+                UsernamePasswordAuthenticationFilter.class
+            )
+            .addFilterAfter(
+                new JWTAPIAutenticacaoFilter(jwtTokenAutenticacaoService),
+                UsernamePasswordAuthenticationFilter.class
+            );
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(
+            "http://localhost:4200",
+            "https://wolvesofdeliveryfront.onrender.com"
+        ));
+        configuration.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
+        ));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
+        return source -> {
+            UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+            src.registerCorsConfiguration("/**", configuration);
+            ((UrlBasedCorsConfigurationSource) src).registerCorsConfiguration("/**", configuration);
+            return src.getCorsConfiguration(source);
+        };
     }
 
     @Bean
