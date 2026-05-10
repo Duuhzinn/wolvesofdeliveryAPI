@@ -43,7 +43,7 @@ public class WebConfigSecurity {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/", "/index",
-                                 "/wolvesofdeliveryAPI/login", //aqui
+                                 "/wolvesofdeliveryAPI/login",
                                  "/login").permitAll()
                 .anyRequest().authenticated()
             )
