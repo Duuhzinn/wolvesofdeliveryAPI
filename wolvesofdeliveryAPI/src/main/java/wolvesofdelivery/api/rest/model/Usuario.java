@@ -157,7 +157,7 @@ public class Usuario implements UserDetails {
 		this.tipoUser = tipoUser;
 	}
 
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	
 	public Long getStatus() {
 		return status;
 	}
@@ -166,7 +166,7 @@ public class Usuario implements UserDetails {
 		this.status = status;
 	}
 
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	
 	public Timestamp getPosicaofila() {
 		return posicaofila;
 	}
