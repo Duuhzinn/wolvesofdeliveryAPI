@@ -21,7 +21,7 @@ import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 @Service
 public class JWTTokenAutenticacaoService {
 
-	private static final long EXPIRATION_TIME = 3600000;
+	private static final long EXPIRATION_TIME = 86400000;
 	private static final String SECRET = "wolvesofdelivery-chave-secreta-jwt-2026";
 	private static final String TOKEN_PREFIX = "Bearer ";
 	private static final String HEADER_STRING = "Authorization";

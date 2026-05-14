@@ -43,7 +43,7 @@ public class IndexController {
 	
 	@CacheEvict(value = "cacheUser", allEntries = true)//SE TIVER CACHE QUE NÃO É USADO, VAI REMOVER
 	@CachePut("cacheUser")//TEM MUDANÇA?, VOU TRAZER E COLOCAR NO CACHE
-	@GetMapping(value = "/pesqName/{nome}", produces = "application/jason")
+	@GetMapping(value = "/pesqName/{nome}", produces = "application/json")
 	public ResponseEntity<List<Usuario>> usuarioPorNome(@PathVariable("nome") String nome) throws InterruptedException{  
 		
 		List<Usuario> list = (List<Usuario>) usuarioRepository.findUserByNome(nome);
