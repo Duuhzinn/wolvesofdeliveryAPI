@@ -38,8 +38,20 @@ public class IndexController {
 	private UsuarioRepository usuarioRepository;
 	@Autowired
 	private RoleRepository roleRepository;
+	
+	//__________________________________________CONSULTANDO USUÁRIO NOME_________________________________________________________//
+	
+	@CacheEvict(value = "cacheUser", allEntries = true)//SE TIVER CACHE QUE NÃO É USADO, VAI REMOVER
+	@CachePut("cacheUser")//TEM MUDANÇA?, VOU TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/pesqName/{nome}", produces = "application/jason")
+	public ResponseEntity<List<Usuario>> usuarioPorNome(@PathVariable("nome") String nome) throws InterruptedException{  
+		
+		List<Usuario> list = (List<Usuario>) usuarioRepository.findUserByNome(nome);
+		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);
+		
+	}
 
-	//__________________________________________CONSULTANDO USUÁRIO_________________________________________________________//
+	//__________________________________________CONSULTANDO USUÁRIO POR ID_________________________________________________________//
 	
 	@CacheEvict(value = "cacheUser", allEntries = true) //se tiver cache que nao é usado, vai remover
 	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
