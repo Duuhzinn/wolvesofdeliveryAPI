@@ -19,6 +19,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	@Query("SELECT u FROM Usuario u LEFT JOIN FETCH u.roles WHERE u.login = ?1")
 	Usuario findUserByLogin(String login);
 
-	@Query("SELECT u FROM Usuario u where u.nome like %?1%")
+	@Query("SELECT u FROM Usuario u WHERE LOWER(u.nome) LIKE LOWER(CONCAT('%', ?1, '%'))")
 	List<Usuario> findUserByNome(String nome);
 }
