@@ -33,7 +33,7 @@ public class MotoristaController {
 	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/allDrive", produces = "application/json")
 	public ResponseEntity<List<Usuario>> usuario(){
-		List<Usuario> list = usuarioRepository.findByTipoUserOrderByStatusAsc("Motorista");
+		List<Usuario> list = usuarioRepository.findByTipoUserOrderByStatusAsc("MOTORISTA");
 		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);//teste
 	}
 
