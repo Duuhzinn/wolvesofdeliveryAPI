@@ -127,30 +127,7 @@ public class IndexController {
 		
 	}
 	
-	//__________________________________________ALTERANDO STATUS DO USUÁRIO SELECIONADO_________________________________________________________//
 
-	@CacheEvict(value = "cacheUser", allEntries = true) //se tiver cache que nao é usado, vai remover
-	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
-	@PatchMapping(value = "/changeStatus/{id}", produces = "application/json")
-	public ResponseEntity<Usuario> alterarStatus(@PathVariable Long id) {
-
-		Usuario usuario = usuarioRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-		if (usuario.getStatus() == 1L) {
-			usuario.setStatus(0L);
-
-		} else {
-			usuario.setStatus(1L);
-			usuario.setPosicaofila(new Timestamp(System.currentTimeMillis()));
-
-		}
-
-		Usuario atualizarusuario = usuarioRepository.save(usuario);
-
-		return new ResponseEntity<Usuario>(atualizarusuario, HttpStatus.OK);
-
-	}
 	
 	//__________________________________________SALVANDO TOKEN FIREBASE NO BANCO DE DADOS DO USUARIO_________________________________________________________//
 	

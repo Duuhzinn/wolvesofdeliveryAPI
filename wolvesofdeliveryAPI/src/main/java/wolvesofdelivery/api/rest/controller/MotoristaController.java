@@ -1,5 +1,6 @@
 package wolvesofdelivery.api.rest.controller;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,6 +38,31 @@ public class MotoristaController {
 	public ResponseEntity<List<Usuario>> usuario(){
 		List<Usuario> list = usuarioRepository.findByTipoUserOrderByStatusAsc("MOTORISTA");
 		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);//teste
+	}
+	
+	//__________________________________________ALTERANDO STATUS DO USUÁRIO SELECIONADO_________________________________________________________//
+
+	@CacheEvict(value = "cacheUser", allEntries = true) //se tiver cache que nao é usado, vai remover
+	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
+	@PatchMapping(value = "/changeStatus/{id}", produces = "application/json")
+	public ResponseEntity<Usuario> alterarStatus(@PathVariable Long id) {
+
+		Usuario usuario = usuarioRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+		if (usuario.getStatus() == 1L) {
+			usuario.setStatus(0L);
+
+		} else {
+			usuario.setStatus(1L);
+			usuario.setPosicaofila(new Timestamp(System.currentTimeMillis()));
+
+		}
+
+		Usuario atualizarusuario = usuarioRepository.save(usuario);
+
+		return new ResponseEntity<Usuario>(atualizarusuario, HttpStatus.OK);
+
 	}
 
 }
