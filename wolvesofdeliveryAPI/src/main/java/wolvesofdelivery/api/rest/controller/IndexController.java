@@ -86,9 +86,9 @@ public class IndexController {
 	    // Associa a role baseada no tipoUser
 	    String nomeRole;
 	    switch (usuario.getTipoUser()) {
-        case "Admin":     nomeRole = "ROLE_ADMIN"; break;
-        case "Motorista": nomeRole = "ROLE_MOTORISTA"; break;
-        case "Cliente":   nomeRole = "ROLE_CLIENTE"; break;
+        case "ADMIN":     nomeRole = "ROLE_ADMIN"; break;
+        case "MOTORISTA": nomeRole = "ROLE_MOTORISTA"; break;
+        case "CLIENTE":   nomeRole = "ROLE_CLIENTE"; break;
         default:
             return new ResponseEntity<>("tipoUser inválido. Use: Admin, Motorista ou Cliente", HttpStatus.BAD_REQUEST);
     }
