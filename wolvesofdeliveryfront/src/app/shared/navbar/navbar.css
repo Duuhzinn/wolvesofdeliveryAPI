@@ -1,0 +1,245 @@
+/* ===== WOLF NAVBAR ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.wolf-navbar {
+  background: #1A1A2E;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  height: 56px;
+  position: relative;
+  font-family: 'Segoe UI', sans-serif;
+  border-bottom: 2px solid #1A1A2E;
+}
+
+/* BRAND */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  background: #1A1A2E;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+}
+
+/* MENU DESKTOP */
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  gap: 2px;
+  height: 100%;
+}
+
+.navbar-menu > li {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-menu > li > a {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 13.5px;
+  padding: 0 12px;
+  height: 100%;
+  transition: color 0.2s, background 0.2s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.navbar-menu > li > a:hover,
+.navbar-menu > li > a.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07); /*aqui*/
+}
+
+.chevron {
+  font-size: 10px;
+  opacity: 0.6;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.dropdown:hover > a .chevron {
+  transform: rotate(180deg);
+}
+
+/* DROPDOWN */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #1A1A2E;
+  border: 1px solid #333;
+  border-top: 2px solid #ccc;
+  border-radius: 0 0 8px 8px;
+  list-style: none;
+  min-width: 170px;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(235, 225, 225, 0.4);
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu li a {
+  display: block;
+  padding: 9px 14px;
+  color: #bbb;
+  text-decoration: none;
+  font-size: 13px;
+  transition: background 0.15s, color 0.15s, padding-left 0.15s;
+  cursor: pointer;
+}
+
+.dropdown-menu li a:hover {
+  background: rgba(255, 255, 255, 0.07); 
+  color: #fff;
+  padding-left: 18px;
+}
+
+/* SAIR */
+.navbar-menu .sair > a {
+  color: #dfd3d3;
+  border: 1px solid rgba(236, 230, 230, 0.3);
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+.navbar-menu .sair > a:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* HAMBURGER */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #ccc;
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+
+.hamburger.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* MENU MOBILE */
+.mobile-menu {
+  display: none;
+  background: #1A1A2E;
+  border-top: 1px solid #222;
+}
+
+.mobile-menu ul {
+  list-style: none;
+}
+
+.mobile-menu > ul > li > a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 1.5rem;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 14px;
+  border-bottom: 1px solid #1e1e1e;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.mobile-menu > ul > li > a:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+}
+
+.mobile-menu > ul > li > a.open .chevron {
+  transform: rotate(180deg);
+}
+
+/* SUBMENU MOBILE */
+.submenu-mobile {
+  list-style: none;
+  background: #21213a;
+  display: none;
+}
+
+.submenu-mobile.open {
+  display: block;
+}
+
+.submenu-mobile li a {
+  display: block;
+  padding: 11px 2.5rem;
+  color: #999;
+  text-decoration: none;
+  font-size: 13px;
+  border-bottom: 1px solid #1a1a1a;
+  transition: color 0.15s;
+  cursor: pointer;
+}
+
+.submenu-mobile li a:hover {
+  color: #E24B4A;
+}
+
+.sair-mobile > a {
+  color: #fff !important;
+}
+
+/* RESPONSIVO */
+@media (max-width: 700px) {
+  .navbar-menu {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .mobile-menu.open {
+    display: block;
+  }
+}
