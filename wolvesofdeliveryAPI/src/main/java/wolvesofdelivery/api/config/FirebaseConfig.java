@@ -23,7 +23,7 @@ public class FirebaseConfig {
 				.build();
 
 		if (FirebaseApp.getApps().isEmpty()) {
-			FirebaseApp.initializeApp(options);
+			FirebaseApp.initializeApp(options); //
 		}
 	}
 

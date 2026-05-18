@@ -7,7 +7,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>4.0.6</version>
-		<relativePath /> <!-- lookup parent from repository -->
+		<relativePath /> <!-- lookup parent from repository! -->
 	</parent>
 	<groupId>wolvesofdelivery.api.rest</groupId>
 	<artifactId>wolvesofdeliveryAPI</artifactId>
@@ -114,7 +114,7 @@
     		<groupId>com.google.firebase</groupId>
     		<artifactId>firebase-admin</artifactId>
     		<version>9.2.0</version>
-		</dependency>
+		</dependency> 
 
 	</dependencies>
 
