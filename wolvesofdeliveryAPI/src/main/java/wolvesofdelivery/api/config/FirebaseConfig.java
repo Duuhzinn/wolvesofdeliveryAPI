@@ -17,7 +17,7 @@ public class FirebaseConfig {
 	@PostConstruct
 	public void initializeFirebase() throws IOException {
 		FileInputStream serviceAccount = new FileInputStream(
-				"src/main/resources/wolvesofdelivery-a6e2a-firebase-adminsdk-fbsvc-91bc594c7c.json");
+				"src/main/resources/wolvesofdelivery-a6e2a-firebase-adminsdk-fbsvc-91bc594c7c.json");//
 
 		FirebaseOptions options = FirebaseOptions.builder().setCredentials(GoogleCredentials.fromStream(serviceAccount))
 				.build();
