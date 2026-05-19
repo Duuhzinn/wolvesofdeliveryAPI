@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.springframework.context.annotation.Configuration;
 
@@ -19,6 +19,8 @@ public class FirebaseConfig {
 	@PostConstruct
 	public void initializeFirebase() throws IOException {
 
+		System.out.println("Inicializando Firebase...");
+		
 		InputStream serviceAccount;
 
 		String firebaseConfig = System.getenv("FIREBASE_CONFIG");
@@ -37,6 +39,8 @@ public class FirebaseConfig {
 		if(FirebaseApp.getApps().isEmpty()) {
 			
 			FirebaseApp.initializeApp(options);
+			
+			System.out.println("Firebase inicializado!");
 				
 		}
 	}
