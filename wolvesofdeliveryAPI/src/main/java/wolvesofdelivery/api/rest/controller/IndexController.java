@@ -161,7 +161,7 @@ public class IndexController {
 			firebasetokenRepository.save(firebasetoken);
 		}
 
-		return new ResponseEntity<>("Token salvo com sucesso!", HttpStatus.OK);
+		return ResponseEntity.ok().build();
 
 	}
 
