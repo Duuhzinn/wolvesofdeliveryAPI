@@ -23,7 +23,7 @@ public class FirebaseConfig {
 		
 		InputStream serviceAccount;
 
-		String firebaseConfig = System.getenv("FIREBASE_CONFIG");
+		String firebaseConfig = System.getenv("FIREBASE_CREDENTIALS");
 
 		if (firebaseConfig != null) {
 			
