@@ -13,8 +13,8 @@ import wolvesofdelivery.api.rest.model.Usuario;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
 	List<Usuario> findByTipoUser(String string, Sort ascending);
-
 	List<Usuario> findByTipoUserOrderByNomeAsc(String tipoUser);
+	List<Usuario> findByTipoUserAndStatusOrderByPosicaofilaAsc(String tipoUser, Long status);
 
 	@Query("SELECT u FROM Usuario u LEFT JOIN FETCH u.roles WHERE u.login = ?1")
 	Usuario findUserByLogin(String login);

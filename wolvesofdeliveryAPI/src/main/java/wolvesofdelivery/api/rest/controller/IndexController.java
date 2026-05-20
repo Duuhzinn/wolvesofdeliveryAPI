@@ -40,8 +40,7 @@ public class IndexController {
 	@Autowired
 	private RoleRepository roleRepository;
 
-	// ________________________CONSULTANDO USUÁRIO
-	// NOME_______________________________//
+	// ________________________CONSULTANDO USUÁRIO NOME_______________________________//
 
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NÃO É USADO, VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA?, VOU TRAZER E COLOCAR NO CACHE
@@ -53,8 +52,7 @@ public class IndexController {
 
 	}
 
-	// _____________________________CONSULTANDO USUÁRIO POR
-	// ID____________________________//
+	// __________________CONSULTANDO USUÁRIO POR ID_____________________//
 
 	@CacheEvict(value = "cacheUser", allEntries = true) // se tiver cache que nao é usado, vai remover
 	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
@@ -66,7 +64,7 @@ public class IndexController {
 
 	}
 
-	// _________________CONSULTANDO TODOS USUÁRIO____________________//
+	// _________________LISTANDO TODOS USUÁRIO____________________//
 
 	@CacheEvict(value = "cacheUser", allEntries = true) // se tiver cache que nao é usado, vai remover
 	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache

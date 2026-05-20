@@ -31,38 +31,40 @@ public class MotoristaController {
 	@Autowired
 	private RoleRepository roleRepository;
 	
-	//________________________________CONSULTANDO USUÁRIO(MOTORISTA ONLINE e OFFLINE)_______________________________________________//
+	//____________CONSULTANDO USUÁRIO(MOTORISTA ONLINE e OFFLINE)_____________________//
 	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/allDrive", produces = "application/json")
-	public ResponseEntity<List<Usuario>> usuario(){
+	public ResponseEntity<List<Usuario>> allDriver(){
 		List<Usuario> list = usuarioRepository.findByTipoUserOrderByNomeAsc("MOTORISTA");
-		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);//teste
+		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);
 	}
 	
-	//__________________________________________ALTERANDO STATUS DO USUÁRIO SELECIONADO_________________________________________________________//
+	//____________ALTERANDO STATUS DO USUÁRIO SELECIONADO____________________________//
 
-	@CacheEvict(value = "cacheUser", allEntries = true) //se tiver cache que nao é usado, vai remover
-	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
+	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@PatchMapping(value = "/changeStatus/{id}", produces = "application/json")
 	public ResponseEntity<Usuario> alterarStatus(@PathVariable Long id) {
-
 		Usuario usuario = usuarioRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
 		if (usuario.getStatus() == 1L) {
 			usuario.setStatus(0L);
-
 		} else {
 			usuario.setStatus(1L);
 			usuario.setPosicaofila(new Timestamp(System.currentTimeMillis()));
-
 		}
-
 		Usuario atualizarusuario = usuarioRepository.save(usuario);
-
 		return new ResponseEntity<Usuario>(atualizarusuario, HttpStatus.OK);
-
 	}
-
+	
+	//_____________LISTANDO ORDEM DA FILA DOS MOTORISTAS_____________________//
+	
+	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/driverQueue", produces = "application/json")
+	public ResponseEntity<List<Usuario>> driverQueue(){
+		List<Usuario> list = usuarioRepository.findByTipoUserAndStatusOrderByPosicaofilaAsc("MOTORISTA", 1L);
+		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);
+	}
 }
