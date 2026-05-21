@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import wolvesofdelivery.api.rest.model.Usuario;
 import wolvesofdelivery.api.rest.repository.RoleRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
+import wolvesofdelivery.api.rest.service.WebSocketService;
 
 //LIBERANDO O ACESSO PARA QUALQUER SISTEMA
 @CrossOrigin(origins = "*")
@@ -30,6 +31,8 @@ public class MotoristaController {
 	private UsuarioRepository usuarioRepository;
 	@Autowired
 	private RoleRepository roleRepository;
+	
+	private WebSocketService webSocketService; 
 	
 	//____________CONSULTANDO USUÁRIO(MOTORISTA ONLINE e OFFLINE)_____________________//
 	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
@@ -55,6 +58,7 @@ public class MotoristaController {
 			usuario.setPosicaofila(new Timestamp(System.currentTimeMillis()));
 		}
 		Usuario atualizarusuario = usuarioRepository.save(usuario);
+		webSocketService.notificarAtualizacaoFila();
 		return new ResponseEntity<Usuario>(atualizarusuario, HttpStatus.OK);
 	}
 	
