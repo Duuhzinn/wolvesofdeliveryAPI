@@ -31,7 +31,7 @@ public class MotoristaController {
 	private UsuarioRepository usuarioRepository;
 	@Autowired
 	private RoleRepository roleRepository;
-	
+	@Autowired
 	private WebSocketService webSocketService; 
 	
 	//____________CONSULTANDO USUÁRIO(MOTORISTA ONLINE e OFFLINE)_____________________//
