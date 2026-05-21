@@ -44,7 +44,7 @@ public class WebConfigSecurity {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/", "/index",
                                  "/wolvesofdeliveryAPI/login",
-                                 "/login", "/health").permitAll()
+                                 "/login", "/health", "/ws/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(
