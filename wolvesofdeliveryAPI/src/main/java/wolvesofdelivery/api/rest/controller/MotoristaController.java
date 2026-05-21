@@ -76,13 +76,10 @@ public class MotoristaController {
 	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/driverQueue/firstid", produces = "application/json")
 	public ResponseEntity<Long> getNextDriverId(){
-		
 		Usuario usuario = usuarioRepository.findTop1ByTipoUserAndStatusOrderByPosicaofilaAsc("MOTORISTA", 1L);
-		
 		if(usuario == null) {
 			return ResponseEntity.noContent().build();
 		}
-		
 		return ResponseEntity.ok(usuario.getId());	
 	}
 	
