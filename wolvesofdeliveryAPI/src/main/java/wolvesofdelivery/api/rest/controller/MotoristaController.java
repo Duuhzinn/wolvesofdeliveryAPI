@@ -63,7 +63,6 @@ public class MotoristaController {
 	}
 	
 	//_____________LISTANDO ORDEM DA FILA DOS MOTORISTAS_____________________//
-	
 	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/driverQueue", produces = "application/json")
@@ -71,4 +70,20 @@ public class MotoristaController {
 		List<Usuario> list = usuarioRepository.findByTipoUserAndStatusOrderByPosicaofilaAsc("MOTORISTA", 1L);
 		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);
 	}
+	
+	//_____________BUSCANDO O PRIMEIRO DA FILA DOS MOTORISTAS ONLINE_____________________//
+	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/driverQueue/firstid", produces = "application/json")
+	public ResponseEntity<Long> getNextDriverId(){
+		
+		Usuario usuario = usuarioRepository.findTop1ByTipoUserAndStatusOrderByPosicaofilaAsc("MOTORISTA", 1L);
+		
+		if(usuario == null) {
+			return ResponseEntity.noContent().build();
+		}
+		
+		return ResponseEntity.ok(usuario.getId());	
+	}
+	
 }
