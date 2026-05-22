@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,8 +26,6 @@ import wolvesofdelivery.api.rest.service.FirebaseNotificationService;
 @RestController
 @RequestMapping(value = "/v1/pushnotification")
 public class PushNotificationController {
-	
-	private volatile boolean corridaAceita = false;
 
 	@Autowired
 	private UsuarioRepository usuarioRepository;
@@ -34,6 +33,8 @@ public class PushNotificationController {
 	private FirebasetokenRepository firebasetokenRepository;
 	@Autowired
 	private FirebaseNotificationService firebaseNotificationService;
+	@Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
@@ -80,7 +81,7 @@ public class PushNotificationController {
 	@PostMapping(value = "/acceptRace/{usuarioId}", produces = "application/json")
 	public ResponseEntity<?> corridaAceita(@PathVariable Long usuarioId){
 		
-		corridaAceita = true;
+		messagingTemplate.convertAndSend("/topic/corrida", usuarioId);
 		return ResponseEntity.ok("Corrida Aceita Pelo Morotista" + usuarioId);
 	}
 	
