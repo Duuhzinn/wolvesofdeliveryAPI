@@ -25,6 +25,8 @@ import wolvesofdelivery.api.rest.service.FirebaseNotificationService;
 @RestController
 @RequestMapping(value = "/v1/pushnotification")
 public class PushNotificationController {
+	
+	private volatile boolean corridaAceita = false;
 
 	@Autowired
 	private UsuarioRepository usuarioRepository;
@@ -72,5 +74,16 @@ public class PushNotificationController {
 		}
 		
 	}
+	
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@PostMapping(value = "/acceptRace/{usuarioId}", produces = "application/json")
+	public ResponseEntity<?> corridaAceita(@PathVariable Long usuarioId){
+		
+		corridaAceita = true;
+		return ResponseEntity.ok("Corrida Aceita Pelo Morotista" + usuarioId);
+	}
+	
+	
 
 }
