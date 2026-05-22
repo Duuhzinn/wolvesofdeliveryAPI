@@ -54,7 +54,7 @@ public class PushNotificationController {
 	
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
-	@GetMapping(value = "/lostRace/{usuarioId}", produces = "application/json")
+	@PostMapping(value = "/lostRace/{usuarioId}", produces = "application/json")
 	public ResponseEntity<?> corridaPerdida(@PathVariable Long usuarioId){
 		Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
 		if (optional.isPresent()) {
