@@ -84,7 +84,7 @@ public class PushNotificationController {
 		messagingTemplate.convertAndSend("/topic/corrida", usuarioId);
 		return ResponseEntity.ok("Corrida Aceita Pelo Morotista" + usuarioId);
 	}
-	
+		
 	
 
 }
