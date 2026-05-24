@@ -83,4 +83,19 @@ public class MotoristaController {
 		return ResponseEntity.ok(usuario.getId());	
 	}
 	
+	// ____________ALTERANDO STATUS DO MOTORISTA PARA OCUPADO___________________//
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@PatchMapping(value = "/busy/{id}", produces = "application/json")
+	public ResponseEntity<Usuario> ocupado(@PathVariable Long id) {
+		Usuario usuario = usuarioRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+		usuario.setStatus(2L);
+
+		Usuario atualizarusuario = usuarioRepository.save(usuario);
+		webSocketService.notificarAtualizacaoFila();
+		return new ResponseEntity<Usuario>(atualizarusuario, HttpStatus.OK);
+	}
+	
 }
