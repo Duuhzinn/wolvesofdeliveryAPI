@@ -38,8 +38,8 @@ public class PushNotificationController {
 
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
-	@PostMapping(value = "/send/{usuarioId}", produces = "application/json")
-	public ResponseEntity<?> enviarNotificacao(@PathVariable Long usuarioId) {
+	@PostMapping(value = "/send/{usuarioId}/{corridaId}", produces = "application/json")
+	public ResponseEntity<?> enviarNotificacao(@PathVariable Long usuarioId, @PathVariable Long corridaId) {
 		Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
 		if (optional.isPresent()) {
 			Usuario usuario = optional.get();
@@ -48,7 +48,8 @@ public class PushNotificationController {
 				return ResponseEntity.badRequest().body("Usuário sem token Firebase");
 			}
 			String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
-					"Nova Corrida 🏍️", "Você recebeu uma nova corrida!");
+					"Nova Corrida 🏍️", "Você recebeu a corrida n.º", 
+					corridaId);
 			return ResponseEntity.ok(resposta);
 		} else {
 			return ResponseEntity.badRequest().body("Usuário não encontrado");
@@ -57,8 +58,8 @@ public class PushNotificationController {
 	
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
-	@PostMapping(value = "/lostRace/{usuarioId}", produces = "application/json")
-	public ResponseEntity<?> corridaPerdida(@PathVariable Long usuarioId){
+	@PostMapping(value = "/lostRace/{usuarioId}/{corridaId}", produces = "application/json")
+	public ResponseEntity<?> corridaPerdida(@PathVariable Long usuarioId, @PathVariable Long corridaId){
 		Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
 		if (optional.isPresent()) {
 			Usuario usuario = optional.get();
@@ -67,7 +68,7 @@ public class PushNotificationController {
 				return ResponseEntity.badRequest().body("Usuário sem tokem FireBase");
 			}
 			String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(), 
-					"Corrida Perdida ❌", "Você perdeu uma corrida!");
+					"Corrida Perdida ❌", "Você perdeu a corrida n.º", corridaId);
 			return ResponseEntity.ok(resposta);
 		} else {
 			return ResponseEntity.badRequest().body("Usuário não encontrado");

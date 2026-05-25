@@ -61,12 +61,23 @@ public class CorridaController {
 
 	}
 
-	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
-	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
-	@PostMapping("/aceitar/{motoristaId}")
-	public ResponseEntity<String> aceitarCorrida(@PathVariable Long motoristaId) {
-		// publica no tópico avisando o frontend que o motorista aceitou
+	@CacheEvict(value = "cacheCorridas", allEntries = true)
+	@PatchMapping("/aceitar/{corridaId}/{motoristaId}")
+	public ResponseEntity<?> aceitarCorrida(@PathVariable Long corridaId, @PathVariable Long motoristaId) {
+		// busca a corrida
+		Corridas corrida = corridasRepository.findById(corridaId)
+				.orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
+		// busca o motorista
+		Usuario motorista = usuarioRepository.findById(motoristaId)
+				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+		// atualiza os dados
+		corrida.setMotorista(motorista);
+		corrida.setData_aceite(new Timestamp(System.currentTimeMillis()));
+		corridasRepository.save(corrida);
+		// avisa o despachante via WebSocket
 		messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
 		return ResponseEntity.ok("Corrida aceita pelo motorista " + motoristaId);
 	}
+	
+
 }
