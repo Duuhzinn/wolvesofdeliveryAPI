@@ -2,6 +2,21 @@ package wolvesofdelivery.api.rest.controller;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+
+import wolvesofdelivery.api.rest.model.Corridas;
+import wolvesofdelivery.api.rest.model.Usuario;
+import wolvesofdelivery.api.rest.repository.CorridasRepository;
+import wolvesofdelivery.api.rest.repository.UsuarioRepository;
+
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @RestController
@@ -9,16 +24,49 @@ import org.springframework.http.ResponseEntity;
 @CrossOrigin(origins = "*")
 public class CorridaController {
 
-    private final SimpMessagingTemplate messagingTemplate;
+	@Autowired
+	private CorridasRepository corridasRepository;
+	@Autowired
+	private UsuarioRepository usuarioRepository;
 
-    public CorridaController(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
-    }
+	private final SimpMessagingTemplate messagingTemplate;
 
-    @PostMapping("/aceitar/{motoristaId}")
-    public ResponseEntity<String> aceitarCorrida(@PathVariable Long motoristaId) {
-        // publica no tópico avisando o frontend que o motorista aceitou
-        messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
-        return ResponseEntity.ok("Corrida aceita pelo motorista " + motoristaId);
-    }
+	public CorridaController(SimpMessagingTemplate messagingTemplate) {
+		this.messagingTemplate = messagingTemplate;
+	}
+
+	@SuppressWarnings("null")
+	@PostMapping(value = "/createRace/{usuarioId}", produces = "application/json")
+	public ResponseEntity<?> criarCorrida(@PathVariable Long usuarioId) {
+		Corridas corridas = new Corridas();
+		corridas.setData_chamada(new Timestamp(System.currentTimeMillis()));
+		corridas.setStatus_corrida("EM ANDAMENTO");
+
+		// BUSCA O USUARIO
+		Usuario usuario = usuarioRepository.findById(usuarioId)
+				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+		// SALVA O ID NO ID USUARIO E NO ID CLIENTE
+		corridas.setUsuario(usuario);
+		corridas.setCliente(usuario);
+
+		Corridas criada = (Corridas) corridasRepository.save(corridas);
+
+		// RETORNA A CORRIDA COM O NOME DO ESTABELECIMENTO
+		Map<String, Object> response = new HashMap<>();
+		response.put("corrida", criada);
+		response.put("estabelecimento", usuario.getNome());
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+
+	}
+
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@PostMapping("/aceitar/{motoristaId}")
+	public ResponseEntity<String> aceitarCorrida(@PathVariable Long motoristaId) {
+		// publica no tópico avisando o frontend que o motorista aceitou
+		messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
+		return ResponseEntity.ok("Corrida aceita pelo motorista " + motoristaId);
+	}
 }
