@@ -7,6 +7,7 @@ import wolvesofdelivery.api.rest.model.Corridas;
 import wolvesofdelivery.api.rest.model.Usuario;
 import wolvesofdelivery.api.rest.repository.CorridasRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
+import wolvesofdelivery.api.rest.service.WebSocketService;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -28,6 +29,8 @@ public class CorridaController {
 	private CorridasRepository corridasRepository;
 	@Autowired
 	private UsuarioRepository usuarioRepository;
+	@Autowired
+	private WebSocketService webSocketService;
 
 	private final SimpMessagingTemplate messagingTemplate;
 
@@ -35,6 +38,7 @@ public class CorridaController {
 		this.messagingTemplate = messagingTemplate;
 	}
 
+	//CRIANDO AS CORRIDAS
 	@SuppressWarnings("null")
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
@@ -63,30 +67,57 @@ public class CorridaController {
 
 	}
 
-	// CORRIDAS DOS MOTORISTAS
+	// CORRIDAS DOS MOTORISTAS EM ANDAMENTO
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDrive/{motoristaId}", produces = "application/json")
 	public ResponseEntity<?> corridasMotorista(@PathVariable Long motoristaId) {
-		List<Corridas> corridas = corridasRepository.findByMotorista_IdOrderByIdDesc(motoristaId);
+		List<Corridas> corridas = corridasRepository.findByMotoristaIdAndStatusOrderByIdDesc(motoristaId, "EM ANDAMENTO");
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
-	// CORRIDAS DO DESPACHANTE
+	// CORRIDAS DO DESPACHANTE EM ANDAMENTO
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDespatcher/{clienteId}", produces = "application/json")
 	public ResponseEntity<?> corridasDespachante(@PathVariable Long clienteId) {
-		List<Corridas> corridas = corridasRepository.findByCliente_IdOrderByIdDesc(clienteId);
+		List<Corridas> corridas = corridasRepository.findByClienteIdAndStatusOrderByIdDesc(clienteId, "EM ANDAMENTO");
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
-	// CORRIDAS DOS ADMIN (TODAS)
+	// CORRIDAS DOS ADMIN (TODAS) EM ANDAMENTO
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/allRace", produces = "application/json")
 	public ResponseEntity<?> todasCorridas() {
-		List<Corridas> corridas = corridasRepository.findAllByOrderByIdDesc();
+		List<Corridas> corridas = corridasRepository.findByStatusOrderByIdDesc("EM ANDAMENTO");
+		return new ResponseEntity<>(corridas, HttpStatus.OK);
+	}
+	
+	// CORRIDAS DOS MOTORISTAS FINALIZADA
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/raceDriveFinished/{motoristaId}", produces = "application/json")
+	public ResponseEntity<?> corridasMotoristaFinalizada(@PathVariable Long motoristaId) {
+		List<Corridas> corridas = corridasRepository.findByMotoristaIdAndStatusOrderByIdDesc(motoristaId, "FINALIZADA");
+		return new ResponseEntity<>(corridas, HttpStatus.OK);
+	}
+
+	// CORRIDAS DO DESPACHANTE FINALIZADA
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/raceDespatcherFinished/{clienteId}", produces = "application/json")
+	public ResponseEntity<?> corridasDespachanteFinalizada(@PathVariable Long clienteId) {
+		List<Corridas> corridas = corridasRepository.findByClienteIdAndStatusOrderByIdDesc(clienteId, "FINALIZADA");
+		return new ResponseEntity<>(corridas, HttpStatus.OK);
+	}
+
+	// CORRIDAS DOS ADMIN (TODAS) FINALIZADA
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/allRaceFinished", produces = "application/json")
+	public ResponseEntity<?> todasCorridasFinished() {
+		List<Corridas> corridas = corridasRepository.findByStatusOrderByIdDesc("FINALIZADA"); 
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
@@ -102,9 +133,18 @@ public class CorridaController {
 			// primeira vez — adiciona inicio
 			corrida.setInicio_corrida(new Timestamp(System.currentTimeMillis()));
 		} else {
-			// segunda vez — adiciona termino
+			// SEGUNDA VEZ - ADICIONA O TERMINO DA CORRIDA
 			corrida.setTermino_corrida(new Timestamp(System.currentTimeMillis()));
 			corrida.setStatus_corrida("FINALIZADA");
+			
+			//ATUALIZA MOTORISTA
+			Usuario motorista = corrida.getMotorista();
+			if(motorista != null) {
+				motorista.setStatus(1L);//ONLINE
+				motorista.setPosicaofila(new Timestamp(System.currentTimeMillis())); //VOLTA PARA A FILA
+				usuarioRepository.save(motorista);
+				webSocketService.notificarAtualizacaoFila(); // AVISA A FILA
+			}
 		}
 
 		corridasRepository.save(corrida);

@@ -3,6 +3,8 @@ package wolvesofdelivery.api.rest.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
@@ -12,12 +14,12 @@ import wolvesofdelivery.api.rest.model.Corridas;
 @RepositoryRestResource(path = "racer")
 public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 
-	//SELECIONA AS CORRIDAS POR MOTORISTA
-	List<Corridas> findByMotorista_IdOrderByIdDesc(Long motoristaId);
-	
-	//SELECIONA AS CORRIDAS DO DESPACHANTE
-	List<Corridas> findByCliente_IdOrderByIdDesc(Long clienteId);
-	
-	//SELECIONA TODAS AS CORRIDAS PARA O ADMIN
-	List<Corridas> findAllByOrderByIdDesc();
+	@Query("SELECT c FROM Corridas c WHERE c.status_corrida = :status ORDER BY c.id DESC")
+	List<Corridas> findByStatusOrderByIdDesc(@Param("status") String status);
+
+	@Query("SELECT c FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status ORDER BY c.id DESC")
+	List<Corridas> findByMotoristaIdAndStatusOrderByIdDesc(@Param("motoristaId") Long motoristaId, @Param("status") String status);
+
+	@Query("SELECT c FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status ORDER BY c.id DESC")
+	List<Corridas> findByClienteIdAndStatusOrderByIdDesc(@Param("clienteId") Long clienteId, @Param("status") String status);
 }
