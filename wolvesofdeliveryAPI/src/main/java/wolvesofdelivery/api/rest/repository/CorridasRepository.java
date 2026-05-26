@@ -13,8 +13,11 @@ import wolvesofdelivery.api.rest.model.Corridas;
 public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 
 	//SELECIONA AS CORRIDAS POR MOTORISTA
-	List<Corridas> findByMotorista_Id(Long motoristaId);
+	List<Corridas> findByMotorista_IdOrderByIdDesc(Long motoristaId);
 	
 	//SELECIONA AS CORRIDAS DO DESPACHANTE
-	List<Corridas> findByCliente_Id(Long clienteId);
+	List<Corridas> findByCliente_IdOrderByIdDesc(Long clienteId);
+	
+	//SELECIONA TODAS AS CORRIDAS PARA O ADMIN
+	List<Corridas> findAllByOrderByIdDesc();
 }

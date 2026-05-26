@@ -36,6 +36,8 @@ public class CorridaController {
 	}
 
 	@SuppressWarnings("null")
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@PostMapping(value = "/createRace/{usuarioId}", produces = "application/json")
 	public ResponseEntity<?> criarCorrida(@PathVariable Long usuarioId) {
 		Corridas corridas = new Corridas();
@@ -60,35 +62,55 @@ public class CorridaController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 
 	}
-	
-	//CORRIDAS DOS MOTORISTAS
+
+	// CORRIDAS DOS MOTORISTAS
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDrive/{motoristaId}", produces = "application/json")
-	public ResponseEntity<?> corridasMotorista(@PathVariable Long motoristaId){
-		List<Corridas> corridas = corridasRepository.findByMotorista_Id(motoristaId);
+	public ResponseEntity<?> corridasMotorista(@PathVariable Long motoristaId) {
+		List<Corridas> corridas = corridasRepository.findByMotorista_IdOrderByIdDesc(motoristaId);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
-	
-	//CORRIDAS DO DESPACHANTE
+
+	// CORRIDAS DO DESPACHANTE
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDespatcher/{clienteId}", produces = "application/json")
-	public ResponseEntity<?> corridasDespachante(@PathVariable Long clienteId){
-		List<Corridas> corridas = corridasRepository.findByCliente_Id(clienteId);
+	public ResponseEntity<?> corridasDespachante(@PathVariable Long clienteId) {
+		List<Corridas> corridas = corridasRepository.findByCliente_IdOrderByIdDesc(clienteId);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
-	
-	//CORRIDAS DOS ADMIN (TODAS)
+
+	// CORRIDAS DOS ADMIN (TODAS)
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/allRace", produces = "application/json")
 	public ResponseEntity<?> todasCorridas() {
-	    List<Corridas> corridas = corridasRepository.findAll();
-	    return new ResponseEntity<>(corridas, HttpStatus.OK);
+		List<Corridas> corridas = corridasRepository.findAllByOrderByIdDesc();
+		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
-	
-	
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@PatchMapping(value = "/updateRace/{corridaId}", produces = "application/json")
+	public ResponseEntity<?> atualizarCorrida(@PathVariable Long corridaId) {
+		// busca a corrida
+		Corridas corrida = corridasRepository.findById(corridaId)
+				.orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
+
+		if (corrida.getInicio_corrida() == null) {
+			// primeira vez — adiciona inicio
+			corrida.setInicio_corrida(new Timestamp(System.currentTimeMillis()));
+		} else {
+			// segunda vez — adiciona termino
+			corrida.setTermino_corrida(new Timestamp(System.currentTimeMillis()));
+			corrida.setStatus_corrida("FINALIZADA");
+		}
+
+		corridasRepository.save(corrida);
+		// avisa o despachante via WebSocket
+		messagingTemplate.convertAndSend("/topic/corrida", corridaId);
+		return ResponseEntity.ok("Corrida atualizada!");
+	}
 
 }
