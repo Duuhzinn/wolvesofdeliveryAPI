@@ -60,24 +60,35 @@ public class CorridaController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 
 	}
-
-	@CacheEvict(value = "cacheCorridas", allEntries = true)
-	@PatchMapping(value ="/aceitar/{corridaId}/{motoristaId}", produces = "application/json")
-	public ResponseEntity<?> aceitarCorrida(@PathVariable Long corridaId, @PathVariable Long motoristaId) {
-		// busca a corrida
-		Corridas corrida = corridasRepository.findById(corridaId)
-				.orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
-		// busca o motorista
-		Usuario motorista = usuarioRepository.findById(motoristaId)
-				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
-		// atualiza os dados
-		corrida.setMotorista(motorista);
-		corrida.setData_aceite(new Timestamp(System.currentTimeMillis()));
-		corridasRepository.save(corrida);
-		// avisa o despachante via WebSocket
-		messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
-		return ResponseEntity.ok("Corrida aceita pelo motorista " + motoristaId);
+	
+	//CORRIDAS DOS MOTORISTAS
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/raceDrive/{motoristaId}", produces = "application/json")
+	public ResponseEntity<?> corridasMotorista(@PathVariable Long motoristaId){
+		List<Corridas> corridas = corridasRepository.findByMotorista_Id(motoristaId);
+		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
+	
+	//CORRIDAS DO DESPACHANTE
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/raceDespatcher/{clienteId}", produces = "application/json")
+	public ResponseEntity<?> corridasDespachante(@PathVariable Long clienteId){
+		List<Corridas> corridas = corridasRepository.findByCliente_Id(clienteId);
+		return new ResponseEntity<>(corridas, HttpStatus.OK);
+	}
+	
+	//CORRIDAS DOS ADMIN (TODAS)
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/allRace", produces = "application/json")
+	public ResponseEntity<?> todasCorridas() {
+	    List<Corridas> corridas = corridasRepository.findAll();
+	    return new ResponseEntity<>(corridas, HttpStatus.OK);
+	}
+
+	
 	
 
 }
