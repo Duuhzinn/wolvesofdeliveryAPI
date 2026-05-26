@@ -1,5 +1,6 @@
 package wolvesofdelivery.api.rest.controller;
 
+import java.sql.Timestamp;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,13 +10,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import wolvesofdelivery.api.rest.model.Corridas;
 import wolvesofdelivery.api.rest.model.Firebasetoken;
 import wolvesofdelivery.api.rest.model.Usuario;
+import wolvesofdelivery.api.rest.repository.CorridasRepository;
 import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 import wolvesofdelivery.api.rest.service.FirebaseNotificationService;
@@ -27,6 +31,8 @@ import wolvesofdelivery.api.rest.service.FirebaseNotificationService;
 @RequestMapping(value = "/v1/pushnotification")
 public class PushNotificationController {
 
+	@Autowired
+	private CorridasRepository corridasRepository;
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 	@Autowired
@@ -77,13 +83,24 @@ public class PushNotificationController {
 		
 	}
 	
+	
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
-	@PostMapping(value = "/acceptRace/{usuarioId}", produces = "application/json")
-	public ResponseEntity<?> corridaAceita(@PathVariable Long usuarioId){
-		
-		messagingTemplate.convertAndSend("/topic/corrida", usuarioId);
-		return ResponseEntity.ok("Corrida Aceita Pelo Morotista" + usuarioId);
+	@PostMapping(value ="/acceptRace/{corridaId}/{motoristaId}", produces = "application/json")
+	public ResponseEntity<?> corridaAceita(@PathVariable Long corridaId, @PathVariable Long motoristaId) {
+		// busca a corrida
+		Corridas corrida = corridasRepository.findById(corridaId)
+				.orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
+		// busca o motorista
+		Usuario motorista = usuarioRepository.findById(motoristaId)
+				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+		// atualiza os dados
+		corrida.setMotorista(motorista);
+		corrida.setData_aceite(new Timestamp(System.currentTimeMillis()));
+		corridasRepository.save(corrida);
+		// avisa o despachante via WebSocket
+		messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
+		return ResponseEntity.ok("Corrida aceita pelo motorista " + motoristaId);
 	}
 		
 	

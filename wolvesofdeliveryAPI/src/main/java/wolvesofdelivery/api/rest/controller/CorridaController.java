@@ -62,7 +62,7 @@ public class CorridaController {
 	}
 
 	@CacheEvict(value = "cacheCorridas", allEntries = true)
-	@PatchMapping("/aceitar/{corridaId}/{motoristaId}")
+	@PatchMapping(value ="/aceitar/{corridaId}/{motoristaId}", produces = "application/json")
 	public ResponseEntity<?> aceitarCorrida(@PathVariable Long corridaId, @PathVariable Long motoristaId) {
 		// busca a corrida
 		Corridas corrida = corridasRepository.findById(corridaId)
