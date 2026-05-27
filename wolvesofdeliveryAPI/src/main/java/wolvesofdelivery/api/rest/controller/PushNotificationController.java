@@ -42,8 +42,8 @@ public class PushNotificationController {
 	@Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-	@PostMapping(value = "/send/{usuarioId}", produces = "application/json")
-	public ResponseEntity<?> enviarNotificacaoSemCorrida(@PathVariable Long usuarioId) {
+	@PostMapping(value = "/send/{usuarioId}/{despachanteId}", produces = "application/json")
+	public ResponseEntity<?> enviarNotificacaoSemCorrida(@PathVariable Long usuarioId, @PathVariable Long despachanteId) {
 	    Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
 	    if (optional.isPresent()) {
 	        Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
@@ -51,7 +51,7 @@ public class PushNotificationController {
 	            return ResponseEntity.badRequest().body("Usuário sem token Firebase");
 	        }
 	        String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
-	                "Nova Corrida 🏍️", "Você tem uma nova corrida disponível!", 0L);
+	                "Nova Corrida 🏍️", "Você tem uma nova corrida disponível!", 0L, despachanteId);
 	        return ResponseEntity.ok(resposta);
 	    } else {
 	        return ResponseEntity.badRequest().body("Usuário não encontrado");
@@ -70,7 +70,7 @@ public class PushNotificationController {
 				return ResponseEntity.badRequest().body("Usuário sem tokem FireBase");
 			}
 			String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(), 
-					"Corrida Perdida ❌", "Você perdeu a corrida n.º", corridaId);
+				    "Corrida Perdida ❌", "Você perdeu a corrida n.º", corridaId, 0L);
 			return ResponseEntity.ok(resposta);
 		} else {
 			return ResponseEntity.badRequest().body("Usuário não encontrado");

@@ -8,13 +8,14 @@ import com.google.firebase.messaging.Message;
 @Service
 public class FirebaseNotificationService {
 
-	public String enviarNotificacao(String token, String titulo, String mensagem, Long corridaId) {
+	public String enviarNotificacao(String token, String titulo, String mensagem, Long corridaId, Long cliente_id) {
 		try {
 			Message message = Message.builder()
 					.setToken(token)
 					.putData("title", titulo)
 					.putData("body", mensagem)
 					.putData("corridaId", corridaId.toString())
+					.putData("cliente_id", cliente_id.toString())
 					.build();
 			FirebaseMessaging.getInstance().send(message);
 			return "Notificação Enviada";
