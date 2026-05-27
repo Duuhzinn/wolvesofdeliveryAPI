@@ -42,24 +42,20 @@ public class PushNotificationController {
 	@Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
-	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
-	@PostMapping(value = "/send/{usuarioId}/{corridaId}", produces = "application/json")
-	public ResponseEntity<?> enviarNotificacao(@PathVariable Long usuarioId, @PathVariable Long corridaId) {
-		Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
-		if (optional.isPresent()) {
-			Usuario usuario = optional.get();
-			Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
-			if (firebasetoken == null) {
-				return ResponseEntity.badRequest().body("Usuário sem token Firebase");
-			}
-			String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
-					"Nova Corrida 🏍️", "Você recebeu a corrida n.º", 
-					corridaId);
-			return ResponseEntity.ok(resposta);
-		} else {
-			return ResponseEntity.badRequest().body("Usuário não encontrado");
-		}
+	@PostMapping(value = "/send/{usuarioId}", produces = "application/json")
+	public ResponseEntity<?> enviarNotificacaoSemCorrida(@PathVariable Long usuarioId) {
+	    Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
+	    if (optional.isPresent()) {
+	        Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
+	        if (firebasetoken == null) {
+	            return ResponseEntity.badRequest().body("Usuário sem token Firebase");
+	        }
+	        String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
+	                "Nova Corrida 🏍️", "Você tem uma nova corrida disponível!", 0L);
+	        return ResponseEntity.ok(resposta);
+	    } else {
+	        return ResponseEntity.badRequest().body("Usuário não encontrado");
+	    }
 	}
 	
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
