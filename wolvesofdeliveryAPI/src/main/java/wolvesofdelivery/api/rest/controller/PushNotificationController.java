@@ -80,23 +80,24 @@ public class PushNotificationController {
 	}
 	
 	
-	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
-	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
-	@PostMapping(value ="/acceptRace/{corridaId}/{motoristaId}", produces = "application/json")
-	public ResponseEntity<?> corridaAceita(@PathVariable Long corridaId, @PathVariable Long motoristaId) {
-		// busca a corrida
-		Corridas corrida = corridasRepository.findById(corridaId)
-				.orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
-		// busca o motorista
-		Usuario motorista = usuarioRepository.findById(motoristaId)
-				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
-		// atualiza os dados
-		corrida.setMotorista(motorista);
-		corrida.setData_aceite(new Timestamp(System.currentTimeMillis()));
-		corridasRepository.save(corrida);
-		// avisa o despachante via WebSocket
-		messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
-		return ResponseEntity.ok("Corrida aceita pelo motorista " + motoristaId);
+	@CacheEvict(value = "cacheUser", allEntries = true)
+	@CachePut("cacheUser")
+	@PostMapping(value = "/createRace/{motoristaId}", produces = "application/json")
+	public ResponseEntity<?> corridaAceita(@PathVariable Long motoristaId) {
+		//BUSCA O MOTORISTA
+	    Usuario motorista = usuarioRepository.findById(motoristaId)
+	            .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+
+	    //CRIA A CORRIDA
+	    Corridas corrida = new Corridas();
+	    corrida.setMotorista(motorista);
+	    corrida.setData_aceite(new Timestamp(System.currentTimeMillis()));
+	    corrida.setStatus_corrida("EM ANDAMENTO");
+	    corridasRepository.save(corrida);
+
+	    //NOTIFICA O DESPACHANTE QUE A CORRIDA FOI CRIADA
+	    messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
+	    return ResponseEntity.ok("Corrida aceita pelo motorista " + motoristaId);
 	}
 		
 	
