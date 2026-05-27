@@ -44,7 +44,6 @@ public class MotoristaController {
 	}
 	
 	//____________ALTERANDO STATUS DO USUÁRIO SELECIONADO____________________________//
-
 	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@PatchMapping(value = "/changeStatus/{id}", produces = "application/json")
@@ -110,4 +109,16 @@ public class MotoristaController {
 		return ResponseEntity.ok().build();
 	}
 	
+	//ALTERA O STATUS DO MOTORISTA PARA OFFLINE
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@PatchMapping(value = "/signOffline/{id}", produces = "application/json")
+	public ResponseEntity<?> marcarOffline(@PathVariable Long id) {
+		Usuario usuario = usuarioRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+		usuario.setStatus(0L);
+	    usuarioRepository.save(usuario);
+	    webSocketService.notificarAtualizacaoFila();
+	    return ResponseEntity.ok().build();
+	}
 }
