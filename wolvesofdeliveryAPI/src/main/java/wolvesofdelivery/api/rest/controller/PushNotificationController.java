@@ -80,24 +80,25 @@ public class PushNotificationController {
 	}
 	
 	
-	@CacheEvict(value = "cacheUser", allEntries = true)
-	@CachePut("cacheUser")
-	@PostMapping(value = "/createRace/{motoristaId}", produces = "application/json")
-	public ResponseEntity<?> corridaAceita(@PathVariable Long motoristaId) {
-		//BUSCA O MOTORISTA
-	    Usuario motorista = usuarioRepository.findById(motoristaId)
-	            .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+	@PostMapping(value = "/createRace/{motoristaId}/{despachanteId}", produces = "application/json")
+	public ResponseEntity<?> corridaAceita(@PathVariable Long motoristaId, @PathVariable Long despachanteId) {
 
-	    //CRIA A CORRIDA
-	    Corridas corrida = new Corridas();
-	    corrida.setMotorista(motorista);
-	    corrida.setData_aceite(new Timestamp(System.currentTimeMillis()));
-	    corrida.setStatus_corrida("EM ANDAMENTO");
-	    corridasRepository.save(corrida);
+		Usuario motorista = usuarioRepository.findById(motoristaId)
+				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
 
-	    //NOTIFICA O DESPACHANTE QUE A CORRIDA FOI CRIADA
-	    messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
-	    return ResponseEntity.ok("Corrida aceita pelo motorista " + motoristaId);
+		Usuario despachante = usuarioRepository.findById(despachanteId)
+				.orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
+
+		Corridas corrida = new Corridas();
+		corrida.setMotorista(motorista);
+		corrida.setCliente(despachante);
+		corrida.setData_aceite(new Timestamp(System.currentTimeMillis()));
+		corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
+		corrida.setStatus_corrida("EM ANDAMENTO");
+		corridasRepository.save(corrida);
+
+		messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
+		return ResponseEntity.ok("Corrida aceita pelo motorista " + motoristaId);
 	}
 		
 	
