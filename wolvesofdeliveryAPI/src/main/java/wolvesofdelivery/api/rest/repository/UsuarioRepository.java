@@ -27,4 +27,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	//SELECIONA O PRIMEIRO DA LISTA DOS MOTORISTAS ONLINE
 	Usuario findTop1ByTipoUserAndStatusOrderByPosicaofilaAsc(String tipoUser, Long status);
 	
+	List<Usuario> findByNomeContainingIgnoreCaseAndTipoUser(String nome, String tipoUser);
+	
 }

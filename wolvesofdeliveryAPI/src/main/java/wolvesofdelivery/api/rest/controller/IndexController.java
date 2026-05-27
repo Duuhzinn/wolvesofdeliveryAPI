@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import wolvesofdelivery.api.rest.model.Firebasetoken;
@@ -45,10 +46,11 @@ public class IndexController {
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NÃO É USADO, VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA?, VOU TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/pesqName/{nome}", produces = "application/json")
-	public ResponseEntity<List<Usuario>> usuarioPorNome(@PathVariable("nome") String nome) throws InterruptedException {
+	public ResponseEntity<List<Usuario>> usuarioPorNome(@PathVariable("nome") String nome,
+			@RequestParam("tipoUser") String tipoUser) throws InterruptedException {
 
-		List<Usuario> list = (List<Usuario>) usuarioRepository.findUserByNome(nome);
-		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);
+		List<Usuario> list = usuarioRepository.findByNomeContainingIgnoreCaseAndTipoUser(nome, tipoUser);
+		return new ResponseEntity<>(list, HttpStatus.OK);
 
 	}
 
