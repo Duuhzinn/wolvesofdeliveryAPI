@@ -15,7 +15,7 @@ public class FirebaseNotificationService {
 					.putData("title", titulo)
 					.putData("body", mensagem)
 					.putData("corridaId", corridaId.toString())
-					.putData("cliente_id", cliente_id.toString())
+					.putData("despachanteId", cliente_id.toString())
 					.build();
 			FirebaseMessaging.getInstance().send(message);
 			return "Notificação Enviada";
