@@ -79,7 +79,8 @@ public class PushNotificationController {
 		
 	}
 	
-	
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@PostMapping(value = "/createRace/{motoristaId}/{despachanteId}", produces = "application/json")
 	public ResponseEntity<?> corridaAceita(@PathVariable Long motoristaId, @PathVariable Long despachanteId) {
 
