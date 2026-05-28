@@ -121,4 +121,19 @@ public class MotoristaController {
 	    webSocketService.notificarAtualizacaoFila();
 	    return ResponseEntity.ok().build();
 	}
+	
+	// MOTORISTA RECUSOU A CORRIDA - VOLTA PARA O FIM DA FILA
+	@CacheEvict(value = "cacheUser", allEntries = true)
+	@CachePut("cacheUser")
+	@PatchMapping(value = "/recusarCorrida/{id}", produces = "application/json")
+	public ResponseEntity<?> recusarCorrida(@PathVariable Long id) {
+		Usuario usuario = usuarioRepository.findById(id)
+	            .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+		usuario.setStatus(1L);
+		usuario.setPosicaofila(new Timestamp(System.currentTimeMillis()));
+	    usuarioRepository.save(usuario);
+	    webSocketService.notificarAtualizacaoFila(); // AVISA A FILA
+	    return ResponseEntity.ok().build();
+	    
+	}
 }
