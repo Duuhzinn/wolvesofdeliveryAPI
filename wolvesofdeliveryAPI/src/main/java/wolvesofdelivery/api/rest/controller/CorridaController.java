@@ -12,6 +12,9 @@ import wolvesofdelivery.api.rest.service.WebSocketService;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -40,7 +43,7 @@ public class CorridaController {
 		this.messagingTemplate = messagingTemplate;
 	}
 
-	//CRIANDO AS CORRIDAS
+	// CRIANDO AS CORRIDAS
 	@SuppressWarnings("null")
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
@@ -73,8 +76,10 @@ public class CorridaController {
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDrive/{motoristaId}", produces = "application/json")
-	public ResponseEntity<?> corridasMotorista(@PathVariable Long motoristaId, @PageableDefault(size = 10) Pageable pageable) {
-		Page<Corridas> corridas = corridasRepository.findByMotoristaIdAndStatusOrderByIdDesc(motoristaId, "EM ANDAMENTO", pageable);
+	public ResponseEntity<?> corridasMotorista(@PathVariable Long motoristaId,
+			@PageableDefault(size = 10) Pageable pageable) {
+		Page<Corridas> corridas = corridasRepository.findByMotoristaIdAndStatusOrderByIdDesc(motoristaId,
+				"EM ANDAMENTO", pageable);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
@@ -82,8 +87,10 @@ public class CorridaController {
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDespatcher/{clienteId}", produces = "application/json")
-	public ResponseEntity<?> corridasDespachante(@PathVariable Long clienteId, @PageableDefault(size = 10) Pageable pageable) {
-		Page<Corridas> corridas = corridasRepository.findByClienteIdAndStatusOrderByIdDesc(clienteId, "EM ANDAMENTO", pageable);
+	public ResponseEntity<?> corridasDespachante(@PathVariable Long clienteId,
+			@PageableDefault(size = 10) Pageable pageable) {
+		Page<Corridas> corridas = corridasRepository.findByClienteIdAndStatusOrderByIdDesc(clienteId, "EM ANDAMENTO",
+				pageable);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
@@ -95,13 +102,15 @@ public class CorridaController {
 		Page<Corridas> corridas = corridasRepository.findByStatusOrderByIdDesc("EM ANDAMENTO", pageable);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
-	
+
 	// CORRIDAS DOS MOTORISTAS FINALIZADA
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDriveFinished/{motoristaId}", produces = "application/json")
-	public ResponseEntity<?> corridasMotoristaFinalizada(@PathVariable Long motoristaId, @PageableDefault(size = 10) Pageable pageable) {
-		Page<Corridas> corridas = corridasRepository.findByMotoristaIdAndStatusOrderByIdDesc(motoristaId, "FINALIZADA", pageable);
+	public ResponseEntity<?> corridasMotoristaFinalizada(@PathVariable Long motoristaId,
+			@PageableDefault(size = 10) Pageable pageable) {
+		Page<Corridas> corridas = corridasRepository.findByMotoristaIdAndStatusOrderByIdDesc(motoristaId, "FINALIZADA",
+				pageable);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
@@ -109,8 +118,10 @@ public class CorridaController {
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDespatcherFinished/{clienteId}", produces = "application/json")
-	public ResponseEntity<?> corridasDespachanteFinalizada(@PathVariable Long clienteId, @PageableDefault(size = 10) Pageable pageable) {
-		Page<Corridas> corridas = corridasRepository.findByClienteIdAndStatusOrderByIdDesc(clienteId, "FINALIZADA", pageable);
+	public ResponseEntity<?> corridasDespachanteFinalizada(@PathVariable Long clienteId,
+			@PageableDefault(size = 10) Pageable pageable) {
+		Page<Corridas> corridas = corridasRepository.findByClienteIdAndStatusOrderByIdDesc(clienteId, "FINALIZADA",
+				pageable);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
@@ -119,7 +130,7 @@ public class CorridaController {
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/allRaceFinished", produces = "application/json")
 	public ResponseEntity<?> todasCorridasFinished(@PageableDefault(size = 10) Pageable pageable) {
-		Page<Corridas> corridas = corridasRepository.findByStatusOrderByIdDesc("FINALIZADA", pageable); 
+		Page<Corridas> corridas = corridasRepository.findByStatusOrderByIdDesc("FINALIZADA", pageable);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
@@ -138,12 +149,12 @@ public class CorridaController {
 			// SEGUNDA VEZ - ADICIONA O TERMINO DA CORRIDA
 			corrida.setTermino_corrida(new Timestamp(System.currentTimeMillis()));
 			corrida.setStatus_corrida("FINALIZADA");
-			
-			//ATUALIZA MOTORISTA
+
+			// ATUALIZA MOTORISTA
 			Usuario motorista = corrida.getMotorista();
-			if(motorista != null) {
-				motorista.setStatus(1L);//ONLINE
-				motorista.setPosicaofila(new Timestamp(System.currentTimeMillis())); //VOLTA PARA A FILA
+			if (motorista != null) {
+				motorista.setStatus(1L);// ONLINE
+				motorista.setPosicaofila(new Timestamp(System.currentTimeMillis())); // VOLTA PARA A FILA
 				usuarioRepository.save(motorista);
 				webSocketService.notificarAtualizacaoFila(); // AVISA A FILA
 			}
@@ -154,5 +165,92 @@ public class CorridaController {
 		messagingTemplate.convertAndSend("/topic/corrida", corridaId);
 		return ResponseEntity.ok("Corrida atualizada!");
 	}
+//_________________________________________________________________________
 
-}
+	// _________COMEÇA O ENDPOINT DE CIENCIA DE DADOS_________
+	
+	//ESTASTISTICA POR ANO - MOTORISTA
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/estatisticas/motorista/{motoristaId}/{ano}", produces = "application/json")
+	public ResponseEntity<?> estatisticasMotorista (@PathVariable Long motoristaId, @PathVariable int ano){
+		List<Map<String, Object>> resultado = new ArrayList<>();
+		String [] meses = {"JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO",
+                "JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"};
+		
+		for (int mes = 1; mes <= 12; mes ++) {
+			int diasNoMes = LocalDate.of(ano, mes, 1).lengthOfMonth();
+			
+			long totalCorridas = corridasRepository.countByMotoristaIdAndMesAno(motoristaId, mes, ano);
+			long totalFinalizadas = corridasRepository.countByMotoristaIdAndStatusAndMesAno(motoristaId, "FINALIZADA", mes, ano);
+			
+	        Map<String, Object> card = new HashMap<>();
+	        card.put("mes", meses[mes - 1]);
+	        card.put("totalCorridas", totalCorridas);
+	        card.put("totalFaturado", totalFinalizadas * 10.0);
+	        card.put("mediaDiaria", totalCorridas > 0 ? (double) totalCorridas / diasNoMes : 0);
+	        card.put("totalPerdidas", 0); // IMPLEMENTAR FUTURAMENTE
+	        card.put("totalRecusadas", 0); // IMPLEMENTAR FUTURAMENTE
+	        resultado.add(card);
+		}
+		return new ResponseEntity<>(resultado, HttpStatus.OK);
+	}
+	
+	// ESTATÍSTICAS POR ANO - ADMIN (TODOS)
+	@GetMapping(value = "/estatisticas/adm/{ano}", produces = "application/json")
+	public ResponseEntity<?> estatisticasAdm(@PathVariable int ano) {
+	    List<Map<String, Object>> resultado = new ArrayList<>();
+	    String[] meses = {"JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO",
+	                      "JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"};
+
+	    for (int mes = 1; mes <= 12; mes++) {
+	        int diasNoMes = LocalDate.of(ano, mes, 1).lengthOfMonth();
+
+	        long totalCorridas = corridasRepository.countByMesAno(mes, ano);
+	        long totalFinalizadas = corridasRepository.countByStatusAndMesAno("FINALIZADA", mes, ano);
+	        String motoristaTop = corridasRepository.findMotoristaTopByMesAno(mes, ano);
+
+	        Map<String, Object> card = new HashMap<>();
+	        card.put("mes", meses[mes - 1]);
+	        card.put("totalCorridas", totalCorridas);
+	        card.put("totalFaturado", totalFinalizadas * 10.0);
+	        card.put("mediaDiaria", totalCorridas > 0 ? (double) totalCorridas / diasNoMes : 0);
+	        card.put("totalPerdidas", 0); // IMPLEMENTAR FUTURAMENTE
+	        card.put("totalRecusadas", 0); // IMPLEMENTAR FUTURAMENTE
+	        card.put("motoristaTop", motoristaTop != null ? motoristaTop : "-");
+	        resultado.add(card);
+	    }
+
+	    return new ResponseEntity<>(resultado, HttpStatus.OK);
+	}
+	
+	// ESTATÍSTICAS POR ANO - CLIENTE
+	@GetMapping(value = "/estatisticas/cliente/{clienteId}/{ano}", produces = "application/json")
+	public ResponseEntity<?> estatisticasCliente(@PathVariable Long clienteId, @PathVariable int ano) {
+	    List<Map<String, Object>> resultado = new ArrayList<>();
+	    String[] meses = {"JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO",
+	                      "JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"};
+
+	    for (int mes = 1; mes <= 12; mes++) {
+	        int diasNoMes = LocalDate.of(ano, mes, 1).lengthOfMonth();
+
+	        long totalCorridas = corridasRepository.countByClienteIdAndMesAno(clienteId, mes, ano);
+	        long totalFinalizadas = corridasRepository.countByClienteIdAndStatusAndMesAno(clienteId, "FINALIZADA", mes, ano);
+
+	        Map<String, Object> card = new HashMap<>();
+	        card.put("mes", meses[mes - 1]);
+	        card.put("totalCorridas", totalCorridas);
+	        card.put("totalFaturado", totalFinalizadas * 10.0);
+	        card.put("mediaDiaria", totalCorridas > 0 ? (double) totalCorridas / diasNoMes : 0);
+	        card.put("totalPerdidas", 0);   // IMPLEMENTAR FUTURAMENTE
+	        card.put("totalRecusadas", 0);  // IMPLEMENTAR FUTURAMENTE
+	        resultado.add(card);
+	    }
+
+	    return new ResponseEntity<>(resultado, HttpStatus.OK);
+	}
+
+
+}	
+
+	
