@@ -19,6 +19,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -170,6 +171,7 @@ public class CorridaController {
 	// _________COMEÇA O ENDPOINT DE CIENCIA DE DADOS_________
 	
 	//ESTASTISTICA POR ANO - MOTORISTA
+	@Cacheable(value = "estatisticas", key = "#motoristaId + '-' + #ano")
 	@GetMapping(value = "/estatisticas/motorista/{motoristaId}/{ano}", produces = "application/json")
 	public ResponseEntity<?> estatisticasMotorista (@PathVariable Long motoristaId, @PathVariable int ano){
 		List<Map<String, Object>> resultado = new ArrayList<>();
@@ -195,6 +197,7 @@ public class CorridaController {
 	}
 	
 	// ESTATÍSTICAS POR ANO - ADMIN (TODOS)
+	@Cacheable(value = "estatisticas", key = "'adm-' + #ano")
 	@GetMapping(value = "/estatisticas/adm/{ano}", produces = "application/json")
 	public ResponseEntity<?> estatisticasAdm(@PathVariable int ano) {
 	    List<Map<String, Object>> resultado = new ArrayList<>();
@@ -223,6 +226,7 @@ public class CorridaController {
 	}
 	
 	// ESTATÍSTICAS POR ANO - CLIENTE
+	@Cacheable(value = "estatisticas", key = "#clienteId + '-' + #ano")
 	@GetMapping(value = "/estatisticas/cliente/{clienteId}/{ano}", produces = "application/json")
 	public ResponseEntity<?> estatisticasCliente(@PathVariable Long clienteId, @PathVariable int ano) {
 	    List<Map<String, Object>> resultado = new ArrayList<>();
