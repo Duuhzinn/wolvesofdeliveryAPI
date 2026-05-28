@@ -11,12 +11,14 @@ import wolvesofdelivery.api.rest.service.WebSocketService;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -71,8 +73,8 @@ public class CorridaController {
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDrive/{motoristaId}", produces = "application/json")
-	public ResponseEntity<?> corridasMotorista(@PathVariable Long motoristaId) {
-		List<Corridas> corridas = corridasRepository.findByMotoristaIdAndStatusOrderByIdDesc(motoristaId, "EM ANDAMENTO");
+	public ResponseEntity<?> corridasMotorista(@PathVariable Long motoristaId, @PageableDefault(size = 10) Pageable pageable) {
+		Page<Corridas> corridas = corridasRepository.findByMotoristaIdAndStatusOrderByIdDesc(motoristaId, "EM ANDAMENTO", pageable);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
@@ -80,8 +82,8 @@ public class CorridaController {
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDespatcher/{clienteId}", produces = "application/json")
-	public ResponseEntity<?> corridasDespachante(@PathVariable Long clienteId) {
-		List<Corridas> corridas = corridasRepository.findByClienteIdAndStatusOrderByIdDesc(clienteId, "EM ANDAMENTO");
+	public ResponseEntity<?> corridasDespachante(@PathVariable Long clienteId, @PageableDefault(size = 10) Pageable pageable) {
+		Page<Corridas> corridas = corridasRepository.findByClienteIdAndStatusOrderByIdDesc(clienteId, "EM ANDAMENTO", pageable);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
@@ -89,8 +91,8 @@ public class CorridaController {
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/allRace", produces = "application/json")
-	public ResponseEntity<?> todasCorridas() {
-		List<Corridas> corridas = corridasRepository.findByStatusOrderByIdDesc("EM ANDAMENTO");
+	public ResponseEntity<?> todasCorridas(@PageableDefault(size = 10) Pageable pageable) {
+		Page<Corridas> corridas = corridasRepository.findByStatusOrderByIdDesc("EM ANDAMENTO", pageable);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 	
@@ -98,8 +100,8 @@ public class CorridaController {
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDriveFinished/{motoristaId}", produces = "application/json")
-	public ResponseEntity<?> corridasMotoristaFinalizada(@PathVariable Long motoristaId) {
-		List<Corridas> corridas = corridasRepository.findByMotoristaIdAndStatusOrderByIdDesc(motoristaId, "FINALIZADA");
+	public ResponseEntity<?> corridasMotoristaFinalizada(@PathVariable Long motoristaId, @PageableDefault(size = 10) Pageable pageable) {
+		Page<Corridas> corridas = corridasRepository.findByMotoristaIdAndStatusOrderByIdDesc(motoristaId, "FINALIZADA", pageable);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
@@ -107,8 +109,8 @@ public class CorridaController {
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/raceDespatcherFinished/{clienteId}", produces = "application/json")
-	public ResponseEntity<?> corridasDespachanteFinalizada(@PathVariable Long clienteId) {
-		List<Corridas> corridas = corridasRepository.findByClienteIdAndStatusOrderByIdDesc(clienteId, "FINALIZADA");
+	public ResponseEntity<?> corridasDespachanteFinalizada(@PathVariable Long clienteId, @PageableDefault(size = 10) Pageable pageable) {
+		Page<Corridas> corridas = corridasRepository.findByClienteIdAndStatusOrderByIdDesc(clienteId, "FINALIZADA", pageable);
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
@@ -116,8 +118,8 @@ public class CorridaController {
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/allRaceFinished", produces = "application/json")
-	public ResponseEntity<?> todasCorridasFinished() {
-		List<Corridas> corridas = corridasRepository.findByStatusOrderByIdDesc("FINALIZADA"); 
+	public ResponseEntity<?> todasCorridasFinished(@PageableDefault(size = 10) Pageable pageable) {
+		Page<Corridas> corridas = corridasRepository.findByStatusOrderByIdDesc("FINALIZADA", pageable); 
 		return new ResponseEntity<>(corridas, HttpStatus.OK);
 	}
 
@@ -125,12 +127,12 @@ public class CorridaController {
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@PatchMapping(value = "/updateRace/{corridaId}", produces = "application/json")
 	public ResponseEntity<?> atualizarCorrida(@PathVariable Long corridaId) {
-		// busca a corrida
+		// BUSCA A CORRIDA
 		Corridas corrida = corridasRepository.findById(corridaId)
 				.orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
 
 		if (corrida.getInicio_corrida() == null) {
-			// primeira vez — adiciona inicio
+			// PRIMEIRA VEZ - ADICIONA INICIO
 			corrida.setInicio_corrida(new Timestamp(System.currentTimeMillis()));
 		} else {
 			// SEGUNDA VEZ - ADICIONA O TERMINO DA CORRIDA

@@ -1,7 +1,7 @@
 package wolvesofdelivery.api.rest.repository;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,11 +15,11 @@ import wolvesofdelivery.api.rest.model.Corridas;
 public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 
 	@Query("SELECT c FROM Corridas c WHERE c.status_corrida = :status ORDER BY c.id DESC")
-	List<Corridas> findByStatusOrderByIdDesc(@Param("status") String status);
+	Page <Corridas> findByStatusOrderByIdDesc(@Param("status") String status, Pageable pageable);
 
 	@Query("SELECT c FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status ORDER BY c.id DESC")
-	List<Corridas> findByMotoristaIdAndStatusOrderByIdDesc(@Param("motoristaId") Long motoristaId, @Param("status") String status);
+	Page <Corridas> findByMotoristaIdAndStatusOrderByIdDesc(@Param("motoristaId") Long motoristaId, @Param("status") String status, Pageable pageable);
 
 	@Query("SELECT c FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status ORDER BY c.id DESC")
-	List<Corridas> findByClienteIdAndStatusOrderByIdDesc(@Param("clienteId") Long clienteId, @Param("status") String status);
+	Page <Corridas> findByClienteIdAndStatusOrderByIdDesc(@Param("clienteId") Long clienteId, @Param("status") String status, Pageable pageable);
 }
