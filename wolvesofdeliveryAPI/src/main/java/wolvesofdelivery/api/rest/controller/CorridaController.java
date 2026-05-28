@@ -197,6 +197,8 @@ public class CorridaController {
 	}
 	
 	// ESTATÍSTICAS POR ANO - ADMIN (TODOS)
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/estatisticas/adm/{ano}", produces = "application/json")
 	public ResponseEntity<?> estatisticasAdm(@PathVariable int ano) {
 	    List<Map<String, Object>> resultado = new ArrayList<>();
@@ -225,6 +227,8 @@ public class CorridaController {
 	}
 	
 	// ESTATÍSTICAS POR ANO - CLIENTE
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/estatisticas/cliente/{clienteId}/{ano}", produces = "application/json")
 	public ResponseEntity<?> estatisticasCliente(@PathVariable Long clienteId, @PathVariable int ano) {
 	    List<Map<String, Object>> resultado = new ArrayList<>();
