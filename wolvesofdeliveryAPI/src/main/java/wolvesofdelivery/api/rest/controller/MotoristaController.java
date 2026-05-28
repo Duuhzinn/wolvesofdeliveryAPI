@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import wolvesofdelivery.api.rest.model.Firebasetoken;
 import wolvesofdelivery.api.rest.model.Usuario;
+import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.RoleRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
+import wolvesofdelivery.api.rest.service.FirebaseNotificationService;
 import wolvesofdelivery.api.rest.service.WebSocketService;
 
 //LIBERANDO O ACESSO PARA QUALQUER SISTEMA
@@ -28,9 +31,11 @@ import wolvesofdelivery.api.rest.service.WebSocketService;
 public class MotoristaController {
 	
 	@Autowired
-	private UsuarioRepository usuarioRepository;
+	private FirebasetokenRepository firebasetokenRepository;
 	@Autowired
-	private RoleRepository roleRepository;
+	private FirebaseNotificationService firebaseNotificationService;
+	@Autowired
+	private UsuarioRepository usuarioRepository;
 	@Autowired
 	private WebSocketService webSocketService; 
 	
@@ -125,15 +130,34 @@ public class MotoristaController {
 	// MOTORISTA RECUSOU A CORRIDA - VOLTA PARA O FIM DA FILA
 	@CacheEvict(value = "cacheUser", allEntries = true)
 	@CachePut("cacheUser")
-	@PatchMapping(value = "/recusarCorrida/{id}", produces = "application/json")
-	public ResponseEntity<?> recusarCorrida(@PathVariable Long id) {
-		Usuario usuario = usuarioRepository.findById(id)
-	            .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
-		usuario.setStatus(1L);
-		usuario.setPosicaofila(new Timestamp(System.currentTimeMillis()));
-	    usuarioRepository.save(usuario);
-	    webSocketService.notificarAtualizacaoFila(); // AVISA A FILA
-	    return ResponseEntity.ok().build();
-	    
+	@PatchMapping(value = "/recusarCorrida/{motoristaId}/{despachanteId}", produces = "application/json")
+	public ResponseEntity<?> recusarCorrida(@PathVariable Long motoristaId, @PathVariable Long despachanteId) {
+
+		// 1 - JOGA O MOTORISTA QUE RECUSOU PRO FIM DA FILA
+		Usuario motorista = usuarioRepository.findById(motoristaId)
+				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+		motorista.setStatus(1L);
+		motorista.setPosicaofila(new Timestamp(System.currentTimeMillis()));
+		usuarioRepository.save(motorista);
+		webSocketService.notificarAtualizacaoFila();
+
+		// 2 - BUSCA O PROXIMO MOTORISTA DA FILA
+		Usuario proximoMotorista = usuarioRepository.findTop1ByTipoUserAndStatusOrderByPosicaofilaAsc("MOTORISTA", 1L);
+
+		if (proximoMotorista != null) {
+			// 3 - MARCA O PROXIMO COMO CHAMANDO
+			proximoMotorista.setStatus(3L);
+			usuarioRepository.save(proximoMotorista);
+
+			// 4 - ENVIA NOTIFICAÇÃO PARA O PROXIMO MOTORISTA
+			Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(proximoMotorista.getId());
+			if (firebasetoken != null) {
+				firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(), "Nova Corrida 🏍️",
+						"Você tem uma nova corrida disponível!", 0L, despachanteId);
+			}
+
+		}
+		return ResponseEntity.ok().build();
+
 	}
 }
