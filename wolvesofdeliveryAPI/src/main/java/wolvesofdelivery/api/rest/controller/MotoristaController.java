@@ -8,6 +8,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,6 +31,8 @@ import wolvesofdelivery.api.rest.service.WebSocketService;
 @RequestMapping(value = "/v1/drive")
 public class MotoristaController {
 	
+	@Autowired
+	private SimpMessagingTemplate messagingTemplate;
 	@Autowired
 	private FirebasetokenRepository firebasetokenRepository;
 	@Autowired
@@ -129,7 +132,6 @@ public class MotoristaController {
 	
 	// MOTORISTA RECUSOU A CORRIDA - VOLTA PARA O FIM DA FILA
 	@CacheEvict(value = "cacheUser", allEntries = true)
-	@CachePut("cacheUser")
 	@PatchMapping(value = "/recusarCorrida/{motoristaId}/{despachanteId}", produces = "application/json")
 	public ResponseEntity<?> recusarCorrida(@PathVariable Long motoristaId, @PathVariable Long despachanteId) {
 
