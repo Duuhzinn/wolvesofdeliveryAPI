@@ -52,6 +52,9 @@ public class PushNotificationController {
 	        }
 	        String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
 	                "Nova Corrida 🏍️", "Você tem uma nova corrida disponível!", 0L, despachanteId);
+	        
+	        // NOTIFICA VIA WEBSOCKET
+	        messagingTemplate.convertAndSend("/topic/fila", usuarioId);
 	        return ResponseEntity.ok(resposta);
 	    } else {
 	        return ResponseEntity.badRequest().body("Usuário não encontrado");
