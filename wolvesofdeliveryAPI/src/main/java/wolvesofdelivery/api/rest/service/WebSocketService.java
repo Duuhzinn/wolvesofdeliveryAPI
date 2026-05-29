@@ -13,4 +13,8 @@ public class WebSocketService {
     public void notificarAtualizacaoFila() {
         messagingTemplate.convertAndSend("/topic/fila", "atualizar");
     }
+    
+    public void notificarRecusaMotorista() {
+        messagingTemplate.convertAndSend("/topic/recusa", "recusou");
+    }
 }
