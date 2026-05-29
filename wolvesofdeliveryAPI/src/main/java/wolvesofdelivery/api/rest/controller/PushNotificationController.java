@@ -71,6 +71,9 @@ public class PushNotificationController {
 			}
 			String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(), 
 				    "Corrida Perdida ❌", "Você perdeu a corrida n.º", corridaId, 0L);
+			
+	        // NOTIFICA VIA WEBSOCKET
+	        messagingTemplate.convertAndSend("/topic/fila", usuarioId);
 			return ResponseEntity.ok(resposta);
 		} else {
 			return ResponseEntity.badRequest().body("Usuário não encontrado");
