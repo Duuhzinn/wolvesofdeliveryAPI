@@ -166,6 +166,22 @@ public class CorridaController {
 		messagingTemplate.convertAndSend("/topic/corrida", corridaId);
 		return ResponseEntity.ok("Corrida atualizada!");
 	}
+	
+	//CANCELANDO A CORRIDA
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@PatchMapping(value = "/cancelCall/{motoristaId}", produces = "application/json")
+	public ResponseEntity<?> cancelarChamada(@PathVariable Long motoristaId){
+		Usuario motorista = usuarioRepository.findById(motoristaId)
+	            .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+		
+		motorista.setStatus(1L); // ONLINE
+		usuarioRepository.save(motorista);
+		webSocketService.notificarAtualizacaoFila();
+		
+		return ResponseEntity.ok("Chamada cancelada!");
+		
+	}
 //_________________________________________________________________________
 
 	// _________COMEÇA O ENDPOINT DE CIENCIA DE DADOS_________
