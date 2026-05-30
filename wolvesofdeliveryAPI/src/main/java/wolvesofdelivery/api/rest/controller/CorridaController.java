@@ -177,6 +177,7 @@ public class CorridaController {
 		
 		motorista.setStatus(1L); // ONLINE
 		usuarioRepository.save(motorista);
+		messagingTemplate.convertAndSend("/topic/cancelarChamada", motoristaId);
 		webSocketService.notificarAtualizacaoFila();
 		
 		return ResponseEntity.ok("Chamada cancelada!");
