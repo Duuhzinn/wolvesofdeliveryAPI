@@ -9,8 +9,6 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,32 +59,32 @@ public class PushNotificationController {
 	    }
 	}
 	
-	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
-	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@CacheEvict(value = "cacheUser", allEntries = true)
+	@CachePut("cacheUser")
 	@PostMapping(value = "/lostRace/{usuarioId}/{corridaId}", produces = "application/json")
 	public ResponseEntity<?> corridaPerdida(@PathVariable Long usuarioId, @PathVariable Long corridaId){
 		Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
 		if (optional.isPresent()) {
-			Usuario usuario = optional.get();
 			Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
 			if(firebasetoken == null) {
 				return ResponseEntity.badRequest().body("Usuário sem tokem FireBase");
 			}
-			String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(), 
-				    "Corrida Perdida ❌", "Você perdeu a corrida n.º", corridaId, 0L);
-			
+			String resposta = firebaseNotificationService.enviarNotificacaoPerdida(
+				firebasetoken.getToken(), 
+				"Corrida Perdida ❌", 
+				"Você perdeu a corrida n.º", 
+				corridaId
+			);
 	        // NOTIFICA VIA WEBSOCKET
 	        messagingTemplate.convertAndSend("/topic/fila", usuarioId);
 			return ResponseEntity.ok(resposta);
 		} else {
 			return ResponseEntity.badRequest().body("Usuário não encontrado");
-
 		}
-		
 	}
 	
-	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
-	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@CacheEvict(value = "cacheUser", allEntries = true)
+	@CachePut("cacheUser")
 	@PostMapping(value = "/createRace/{motoristaId}/{despachanteId}", produces = "application/json")
 	public ResponseEntity<?> corridaAceita(@PathVariable Long motoristaId, @PathVariable Long despachanteId) {
 
@@ -107,7 +105,4 @@ public class PushNotificationController {
 		messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
 		return ResponseEntity.ok("Corrida aceita pelo motorista " + motoristaId);
 	}
-		
-	
-
 }
