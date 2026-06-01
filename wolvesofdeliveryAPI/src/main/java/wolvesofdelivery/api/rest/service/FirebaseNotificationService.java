@@ -7,6 +7,7 @@ import com.google.firebase.messaging.AndroidConfig.Priority;
 import com.google.firebase.messaging.ApnsConfig;
 import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.Notification;
 import com.google.firebase.messaging.Message;
 
 @Service
@@ -16,6 +17,10 @@ public class FirebaseNotificationService {
 		try {
 			Message message = Message.builder()
 					.setToken(token)
+					.setNotification(Notification.builder()
+							.setTitle(titulo)
+							.setBody(mensagem)
+							.build())
 					.putData("title", titulo)
 					.putData("body", mensagem)
 					.putData("corridaId", corridaId.toString())
