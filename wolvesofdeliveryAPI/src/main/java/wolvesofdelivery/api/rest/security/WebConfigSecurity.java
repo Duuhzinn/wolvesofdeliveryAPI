@@ -64,7 +64,8 @@ public class WebConfigSecurity {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
             "http://localhost:4200",
-            "https://wolvesofdeliveryfront.onrender.com"
+            "https://wolvesofdeliveryfront.onrender.com",
+            "https://localhost"
         ));
         configuration.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
