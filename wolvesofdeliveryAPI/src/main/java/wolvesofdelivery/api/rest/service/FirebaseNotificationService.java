@@ -1,9 +1,8 @@
 package wolvesofdelivery.api.rest.service;
-
 import org.springframework.stereotype.Service;
-
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.AndroidConfig.Priority;
+import com.google.firebase.messaging.AndroidNotification;
 import com.google.firebase.messaging.ApnsConfig;
 import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -12,7 +11,6 @@ import com.google.firebase.messaging.Message;
 
 @Service
 public class FirebaseNotificationService {
-
 	public String enviarNotificacao(String token, String titulo, String mensagem, Long corridaId, Long cliente_id) {
 		try {
 			Message message = Message.builder()
@@ -26,8 +24,12 @@ public class FirebaseNotificationService {
 					.putData("corridaId", corridaId.toString())
 					.putData("despachanteId", cliente_id.toString())
 					.setAndroidConfig(AndroidConfig.builder()
-					.setPriority(Priority.HIGH)
-					.build())
+							.setPriority(Priority.HIGH)
+							.setNotification(AndroidNotification.builder()
+									.setChannelId("corrida_channel")
+									.setSound("default")
+									.build())
+							.build())
 					.setApnsConfig(ApnsConfig.builder()
 							.setAps(Aps.builder()
 									.setContentAvailable(true)
