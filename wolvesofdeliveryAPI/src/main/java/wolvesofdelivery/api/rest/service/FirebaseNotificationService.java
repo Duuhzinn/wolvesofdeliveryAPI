@@ -35,7 +35,9 @@ public class FirebaseNotificationService {
 							.putHeader("apns-priority", "10")
 							.build())
 					.build();
-			FirebaseMessaging.getInstance().send(message);
+			String response = FirebaseMessaging.getInstance().send(message);
+			System.out.println("Firebase OK: " + response);
+			System.out.println("Token: " + token);
 			return "Notificação Enviada";
 		} catch (Exception e) {
 			e.printStackTrace();
