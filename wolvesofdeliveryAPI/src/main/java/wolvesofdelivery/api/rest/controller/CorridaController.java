@@ -268,6 +268,33 @@ public class CorridaController {
 
 	    return new ResponseEntity<>(resultado, HttpStatus.OK);
 	}
+	
+	// FILTRO POR PERÍODO DE DATA
+	@CacheEvict(value = "cacheUser", allEntries = true)
+	@GetMapping(value = "/filterForDate", produces = "application/json")
+	public ResponseEntity<?> filtrarPorData(
+			@RequestParam String inicio,
+			@RequestParam String fim,
+			@RequestParam(required = false) Long clienteId,
+			@RequestParam(required = false) Long motoristaId,
+			@PageableDefault(size = 50) Pageable pageable){
+		
+		Timestamp tsInicio = Timestamp.valueOf(inicio + " 00:00:00");
+		Timestamp tsFim = Timestamp.valueOf(fim + " 23:59:59");
+		
+		Page<Corridas> corridas;
+		
+		if(clienteId != null) {
+			corridas = corridasRepository.findByClienteIdAndDataBetween(clienteId, tsInicio, tsFim, pageable);
+		} else if (motoristaId != null) {
+			corridas = corridasRepository.findByMotoristaIdAndDataBetween(motoristaId, tsInicio, tsFim, pageable);
+		} else {
+			corridas = corridasRepository.findByDataBetween(tsInicio, tsFim, pageable);
+		}
+		
+		return new ResponseEntity<>(corridas, HttpStatus.OK);
+		
+	}
 
 
 }	

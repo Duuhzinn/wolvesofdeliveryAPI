@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
-import java.util.Optional;
+
+import java.sql.Timestamp;
 
 import wolvesofdelivery.api.rest.model.Corridas;
 
@@ -54,5 +55,16 @@ public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
 	long countByClienteIdAndStatusAndMesAno(@Param("clienteId") Long clienteId, @Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
 	
+	// FILTRO POR DATA - ADMIN
+	@Query("SELECT c FROM Corridas c WHERE c.data_chamada BETWEEN :inicio AND :fim ORDER BY c.id DESC")
+	Page<Corridas> findByDataBetween(@Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim, Pageable pageable);
+
+	// FILTRO POR DATA - CLIENTE
+	@Query("SELECT c FROM Corridas c WHERE c.cliente.id = :clienteId AND c.data_chamada BETWEEN :inicio AND :fim ORDER BY c.id DESC")
+	Page<Corridas> findByClienteIdAndDataBetween(@Param("clienteId") Long clienteId, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim, Pageable pageable);
+
+	// FILTRO POR DATA - MOTORISTA
+	@Query("SELECT c FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.data_chamada BETWEEN :inicio AND :fim ORDER BY c.id DESC")
+	Page<Corridas> findByMotoristaIdAndDataBetween(@Param("motoristaId") Long motoristaId, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim, Pageable pageable);
 	
 }
