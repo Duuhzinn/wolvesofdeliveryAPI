@@ -9,6 +9,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 
 import wolvesofdelivery.api.rest.model.Corridas;
 
@@ -55,16 +56,28 @@ public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
 	long countByClienteIdAndStatusAndMesAno(@Param("clienteId") Long clienteId, @Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
 	
-	// FILTRO POR DATA - ADMIN
-	@Query("SELECT c FROM Corridas c WHERE c.data_chamada BETWEEN :inicio AND :fim ORDER BY c.id DESC")
-	Page<Corridas> findByDataBetween(@Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim, Pageable pageable);
+	// CONTAGEM POR PERÍODO - ADMIN
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.data_chamada BETWEEN :inicio AND :fim")
+	long countByDataBetween(@Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
 
-	// FILTRO POR DATA - CLIENTE
-	@Query("SELECT c FROM Corridas c WHERE c.cliente.id = :clienteId AND c.data_chamada BETWEEN :inicio AND :fim ORDER BY c.id DESC")
-	Page<Corridas> findByClienteIdAndDataBetween(@Param("clienteId") Long clienteId, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim, Pageable pageable);
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim")
+	long countByStatusAndDataBetween(@Param("status") String status, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
 
-	// FILTRO POR DATA - MOTORISTA
-	@Query("SELECT c FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.data_chamada BETWEEN :inicio AND :fim ORDER BY c.id DESC")
-	Page<Corridas> findByMotoristaIdAndDataBetween(@Param("motoristaId") Long motoristaId, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim, Pageable pageable);
+	@Query("SELECT c.motorista.nome FROM Corridas c WHERE c.data_chamada BETWEEN :inicio AND :fim AND c.motorista IS NOT NULL GROUP BY c.motorista.id, c.motorista.nome ORDER BY COUNT(c) DESC LIMIT 1")
+	String findMotoristaTopByDataBetween(@Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
+
+	// CONTAGEM POR PERÍODO - CLIENTE
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.data_chamada BETWEEN :inicio AND :fim")
+	long countByClienteIdAndDataBetween(@Param("clienteId") Long clienteId, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
+
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim")
+	long countByClienteIdAndStatusAndDataBetween(@Param("clienteId") Long clienteId, @Param("status") String status, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
+
+	// CONTAGEM POR PERÍODO - MOTORISTA
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.data_chamada BETWEEN :inicio AND :fim")
+	long countByMotoristaIdAndDataBetween(@Param("motoristaId") Long motoristaId, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
+
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim")
+	long countByMotoristaIdAndStatusAndDataBetween(@Param("motoristaId") Long motoristaId, @Param("status") String status, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
 	
 }

@@ -269,34 +269,48 @@ public class CorridaController {
 	    return new ResponseEntity<>(resultado, HttpStatus.OK);
 	}
 	
-	// FILTRO POR PERÍODO DE DATA
-	@CacheEvict(value = "cacheUser", allEntries = true)
-	@GetMapping(value = "/filterForDate", produces = "application/json")
-	public ResponseEntity<?> filtrarPorData(
-			@RequestParam String inicio,
-			@RequestParam String fim,
-			@RequestParam(required = false) Long clienteId,
-			@RequestParam(required = false) Long motoristaId,
-			@PageableDefault(size = 50) Pageable pageable){
-		
-		Timestamp tsInicio = Timestamp.valueOf(inicio + " 00:00:00");
-		Timestamp tsFim = Timestamp.valueOf(fim + " 23:59:59");
-		
-		Page<Corridas> corridas;
-		
-		if(clienteId != null) {
-			corridas = corridasRepository.findByClienteIdAndDataBetween(clienteId, tsInicio, tsFim, pageable);
-		} else if (motoristaId != null) {
-			corridas = corridasRepository.findByMotoristaIdAndDataBetween(motoristaId, tsInicio, tsFim, pageable);
-		} else {
-			corridas = corridasRepository.findByDataBetween(tsInicio, tsFim, pageable);
-		}
-		
-		return new ResponseEntity<>(corridas, HttpStatus.OK);
-		
+	// ESTATÍSTICAS POR PERÍODO - TODOS OS PERFIS
+	@GetMapping(value = "/estatisticas/periodo", produces = "application/json")
+	public ResponseEntity<?> estatisticasPorPeriodo(
+	        @RequestParam String inicio,
+	        @RequestParam String fim,
+	        @RequestParam(required = false) Long clienteId,
+	        @RequestParam(required = false) Long motoristaId) {
+
+	    Timestamp tsInicio = Timestamp.valueOf(inicio + " 00:00:00");
+	    Timestamp tsFim = Timestamp.valueOf(fim + " 23:59:59");
+
+	    long totalCorridas;
+	    long totalFinalizadas;
+	    String motoristaTop = "-";
+
+	    if (clienteId != null) {
+	        totalCorridas = corridasRepository.countByClienteIdAndDataBetween(clienteId, tsInicio, tsFim);
+	        totalFinalizadas = corridasRepository.countByClienteIdAndStatusAndDataBetween(clienteId, "FINALIZADA", tsInicio, tsFim);
+	    } else if (motoristaId != null) {
+	        totalCorridas = corridasRepository.countByMotoristaIdAndDataBetween(motoristaId, tsInicio, tsFim);
+	        totalFinalizadas = corridasRepository.countByMotoristaIdAndStatusAndDataBetween(motoristaId, "FINALIZADA", tsInicio, tsFim);
+	    } else {
+	        totalCorridas = corridasRepository.countByDataBetween(tsInicio, tsFim);
+	        totalFinalizadas = corridasRepository.countByStatusAndDataBetween("FINALIZADA", tsInicio, tsFim);
+	        motoristaTop = corridasRepository.findMotoristaTopByDataBetween(tsInicio, tsFim);
+	        if (motoristaTop == null) motoristaTop = "-";
+	    }
+
+	    // CALCULA DIAS NO PERÍODO
+	    long diasNoPeriodo = (tsFim.getTime() - tsInicio.getTime()) / (1000 * 60 * 60 * 24) + 1;
+
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("totalCorridas", totalCorridas);
+	    result.put("totalFaturado", totalFinalizadas * 10.0);
+	    result.put("mediaDiaria", totalCorridas > 0 ? (double) totalCorridas / diasNoPeriodo : 0);
+	    result.put("totalPerdidas", 0);
+	    result.put("totalRecusadas", 0);
+	    result.put("motoristaTop", motoristaTop);
+
+	    return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-
-
+		
 }	
 
 	
