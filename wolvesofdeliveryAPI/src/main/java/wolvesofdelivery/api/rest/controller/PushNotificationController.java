@@ -72,7 +72,7 @@ public class PushNotificationController {
 			String resposta = firebaseNotificationService.enviarNotificacaoPerdida(
 				firebasetoken.getToken(), 
 				"Corrida Perdida ❌", 
-				"Você perdeu a corrida n.º", 
+				"Você perdeu uma corrida", 
 				corridaId
 			);
 	        // NOTIFICA VIA WEBSOCKET
