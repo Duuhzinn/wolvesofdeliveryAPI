@@ -44,35 +44,6 @@ public class CorridaController {
 		this.messagingTemplate = messagingTemplate;
 	}
 
-	// CRIANDO AS CORRIDAS
-	@SuppressWarnings("null")
-	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
-	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
-	@PostMapping(value = "/createRace/{usuarioId}", produces = "application/json")
-	public ResponseEntity<?> criarCorrida(@PathVariable Long usuarioId) {
-		Corridas corridas = new Corridas();
-		corridas.setData_chamada(new Timestamp(System.currentTimeMillis()));
-		corridas.setStatus_corrida("EM ANDAMENTO");
-
-		// BUSCA O USUARIO
-		Usuario usuario = usuarioRepository.findById(usuarioId)
-				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-		// SALVA O ID NO ID USUARIO E NO ID CLIENTE
-		corridas.setUsuario(usuario);
-		corridas.setCliente(usuario);
-
-		Corridas criada = (Corridas) corridasRepository.save(corridas);
-
-		// RETORNA A CORRIDA COM O NOME DO ESTABELECIMENTO
-		Map<String, Object> response = new HashMap<>();
-		response.put("corrida", criada);
-		response.put("estabelecimento", usuario.getNome());
-
-		return new ResponseEntity<>(response, HttpStatus.OK);
-
-	}
-
 	// CORRIDAS DOS MOTORISTAS EM ANDAMENTO
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE

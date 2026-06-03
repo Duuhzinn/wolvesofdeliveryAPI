@@ -9,6 +9,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,71 +39,74 @@ public class PushNotificationController {
 	@Autowired
 	private FirebaseNotificationService firebaseNotificationService;
 	@Autowired
-    private SimpMessagingTemplate messagingTemplate;
+	private SimpMessagingTemplate messagingTemplate;
 
 	@PostMapping(value = "/send/{usuarioId}/{despachanteId}", produces = "application/json")
-	public ResponseEntity<?> enviarNotificacaoSemCorrida(@PathVariable Long usuarioId, @PathVariable Long despachanteId) {
-	    Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
-	    if (optional.isPresent()) {
-	        Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
-	        if (firebasetoken == null) {
-	            return ResponseEntity.badRequest().body("Usuário sem token Firebase");
-	        }
-	        String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
-	                "Nova Corrida 🏍️", "Você tem uma nova corrida disponível!", 0L, despachanteId);
-	        
-	        // NOTIFICA VIA WEBSOCKET
-	        messagingTemplate.convertAndSend("/topic/fila", usuarioId);
-	        return ResponseEntity.ok(resposta);
-	    } else {
-	        return ResponseEntity.badRequest().body("Usuário não encontrado");
-	    }
-	}
-	
-	@CacheEvict(value = "cacheUser", allEntries = true)
-	@CachePut("cacheUser")
-	@PostMapping(value = "/lostRace/{usuarioId}/{corridaId}", produces = "application/json")
-	public ResponseEntity<?> corridaPerdida(@PathVariable Long usuarioId, @PathVariable Long corridaId){
+	public ResponseEntity<?> enviarNotificacaoSemCorrida(@PathVariable Long usuarioId,
+			@PathVariable Long despachanteId) {
 		Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
 		if (optional.isPresent()) {
 			Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
-			if(firebasetoken == null) {
-				return ResponseEntity.badRequest().body("Usuário sem tokem FireBase");
+			if (firebasetoken == null) {
+				return ResponseEntity.badRequest().body("Usuário sem token Firebase");
 			}
-			String resposta = firebaseNotificationService.enviarNotificacaoPerdida(
-				firebasetoken.getToken(), 
-				"Corrida Perdida ❌", 
-				"Você perdeu uma corrida", 
-				corridaId
-			);
-	        // NOTIFICA VIA WEBSOCKET
-	        messagingTemplate.convertAndSend("/topic/fila", usuarioId);
+
+			// CRIA A CORRIDA COM STATUS AGUARDANDO
+			Usuario motorista = optional.get();
+			Usuario despachante = usuarioRepository.findById(despachanteId)
+					.orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
+
+			Corridas corrida = new Corridas();
+			corrida.setMotorista(motorista);
+			corrida.setCliente(despachante);
+			corrida.setUsuario(despachante);
+			corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
+			corrida.setStatus_corrida("AGUARDANDO");
+			Corridas corridaSalva = corridasRepository.save(corrida);
+
+			String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
+					"Nova Corrida 🏍️", "Você tem uma nova corrida disponível!", corridaSalva.getId(), despachanteId);
+
+			messagingTemplate.convertAndSend("/topic/fila", usuarioId);
 			return ResponseEntity.ok(resposta);
 		} else {
 			return ResponseEntity.badRequest().body("Usuário não encontrado");
 		}
 	}
-	
+
 	@CacheEvict(value = "cacheUser", allEntries = true)
 	@CachePut("cacheUser")
-	@PostMapping(value = "/createRace/{motoristaId}/{despachanteId}", produces = "application/json")
-	public ResponseEntity<?> corridaAceita(@PathVariable Long motoristaId, @PathVariable Long despachanteId) {
+	@PostMapping(value = "/lostRace/{usuarioId}/{corridaId}", produces = "application/json")
+	public ResponseEntity<?> corridaPerdida(@PathVariable Long usuarioId, @PathVariable Long corridaId) {
+		Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
+		if (optional.isPresent()) {
+			Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
+			if (firebasetoken == null) {
+				return ResponseEntity.badRequest().body("Usuário sem tokem FireBase");
+			}
+			String resposta = firebaseNotificationService.enviarNotificacaoPerdida(firebasetoken.getToken(),
+					"Corrida Perdida ❌", "Você perdeu uma corrida", corridaId);
+			// NOTIFICA VIA WEBSOCKET
+			messagingTemplate.convertAndSend("/topic/fila", usuarioId);
+			return ResponseEntity.ok(resposta);
+		} else {
+			return ResponseEntity.badRequest().body("Usuário não encontrado");
+		}
+	}
 
-		Usuario motorista = usuarioRepository.findById(motoristaId)
-				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+	@CacheEvict(value = "cacheUser", allEntries = true)
+	@CachePut("cacheUser")
+	@PatchMapping(value = "/acceptRace/{corridaId}", produces = "application/json")
+	public ResponseEntity<?> corridaAceita(@PathVariable Long corridaId) {
+		Corridas corrida = corridasRepository.findById(corridaId)
+				.orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
 
-		Usuario despachante = usuarioRepository.findById(despachanteId)
-				.orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
-
-		Corridas corrida = new Corridas();
-		corrida.setMotorista(motorista);
-		corrida.setCliente(despachante);
 		corrida.setData_aceite(new Timestamp(System.currentTimeMillis()));
-		corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
 		corrida.setStatus_corrida("EM ANDAMENTO");
 		corridasRepository.save(corrida);
 
-		messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
-		return ResponseEntity.ok("Corrida aceita pelo motorista " + motoristaId);
+		messagingTemplate.convertAndSend("/topic/corrida", corrida.getMotorista().getId());
+		return ResponseEntity.ok("Corrida aceita pelo motorista " + corrida.getMotorista().getId());
+
 	}
 }
