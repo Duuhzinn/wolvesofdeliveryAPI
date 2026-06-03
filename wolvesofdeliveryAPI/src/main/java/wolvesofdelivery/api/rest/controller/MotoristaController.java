@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import wolvesofdelivery.api.rest.model.CorridaRecusada;
 import wolvesofdelivery.api.rest.model.Corridas;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import wolvesofdelivery.api.rest.model.Firebasetoken;
 import wolvesofdelivery.api.rest.model.Usuario;
+import wolvesofdelivery.api.rest.repository.CorridasRecusadaRepository;
 import wolvesofdelivery.api.rest.repository.CorridasRepository;
 import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
@@ -34,6 +36,8 @@ import wolvesofdelivery.api.rest.service.WebSocketService;
 @RequestMapping(value = "/v1/drive")
 public class MotoristaController {
 	
+	@Autowired
+	private CorridasRecusadaRepository corridasRecusadaRepository;
 	@Autowired
 	private SimpMessagingTemplate messagingTemplate;
 	@Autowired
@@ -151,6 +155,15 @@ public class MotoristaController {
 	    usuarioRepository.save(motorista);
 	    webSocketService.notificarAtualizacaoFila();
 	    webSocketService.notificarRecusaMotorista();
+	    
+	    // REGISTRA A RECUSA
+	    Corridas corrida = corridasRepository.findById(corridaId)
+	            .orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
+	    CorridaRecusada corridaRecusada = new CorridaRecusada();
+	    corridaRecusada.setMotorista(motorista);
+	    corridaRecusada.setCorrida(corrida);
+	    corridaRecusada.setDataRecusa(new Timestamp(System.currentTimeMillis()));
+	    corridasRecusadaRepository.save(corridaRecusada);
 
 	    // 2 - BUSCA O PROXIMO MOTORISTA DA FILA (EXCLUINDO O QUE RECUSOU)
 	    Usuario proximoMotorista = usuarioRepository
@@ -158,8 +171,6 @@ public class MotoristaController {
 
 	    if (proximoMotorista != null) {
 	        // 3 - ATUALIZA A CORRIDA COM O NOVO MOTORISTA
-	        Corridas corrida = corridasRepository.findById(corridaId)
-	                .orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
 	        corrida.setMotorista(proximoMotorista);
 	        corridasRepository.save(corrida);
 
@@ -184,4 +195,6 @@ public class MotoristaController {
 	        return ResponseEntity.ok(Map.of("proximoMotoristaId", (Object) null));
 	    }
 	}
+	
+	
 }
