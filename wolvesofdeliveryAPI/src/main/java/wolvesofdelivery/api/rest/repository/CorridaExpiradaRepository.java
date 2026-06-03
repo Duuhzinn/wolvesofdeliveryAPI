@@ -12,6 +12,6 @@ public interface CorridaExpiradaRepository extends JpaRepository<CorridaExpirada
 
     long countByMotoristaId(Long motoristaId);
 
-    long countByMotoristaIdAndDataCorridaExpirdaBetween(Long motoristaId, Timestamp inicio, Timestamp fim);
+    long countByMotoristaIdAndDataExpiradaBetween(Long motoristaId, Timestamp inicio, Timestamp fim);
 
 }

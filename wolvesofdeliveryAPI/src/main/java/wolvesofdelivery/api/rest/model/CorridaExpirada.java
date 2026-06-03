@@ -16,8 +16,8 @@ public class CorridaExpirada implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "corrida_recusada_gen")
-	@SequenceGenerator(name = "corrida_recusada_gen", sequenceName = "corrida_recusada_seq", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "corrida_expirada_gen")
+	@SequenceGenerator(name = "corrida_expirada_gen", sequenceName = "corrida_expirada_seq", allocationSize = 1)
 	private Long id;
 
 	@ManyToOne
@@ -28,7 +28,7 @@ public class CorridaExpirada implements Serializable {
 	@JoinColumn(name = "corrida_id")
 	private Corridas corrida;
 
-	private Timestamp dataExpirda;
+	private Timestamp dataExpirada;
 
 	public Long getId() {
 		return id;
@@ -54,12 +54,12 @@ public class CorridaExpirada implements Serializable {
 		this.corrida = corrida;
 	}
 
-	public Timestamp getDataExpirda() {
-		return dataExpirda;
+	public Timestamp getDataExpirada() {
+		return dataExpirada;
 	}
 
-	public void setDataExpirda(Timestamp dataExpirda) {
-		this.dataExpirda = dataExpirda;
+	public void setDataExpirada(Timestamp dataExpirada) {
+		this.dataExpirada = dataExpirada;
 	}
 
 }

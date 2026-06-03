@@ -95,7 +95,7 @@ public class PushNotificationController {
 			CorridaExpirada expirada = new CorridaExpirada();
 			expirada.setMotorista(optional.get());
 			expirada.setCorrida(corrida);
-			expirada.setDataExpirda(new Timestamp(System.currentTimeMillis()));
+			expirada.setDataExpirada(new Timestamp(System.currentTimeMillis()));
 			corridaExpiradaRepository.save(expirada);
 			
 			String resposta = firebaseNotificationService.enviarNotificacaoPerdida(firebasetoken.getToken(),
