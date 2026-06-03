@@ -206,7 +206,8 @@ public class CorridaController {
 			card.put("totalPerdidas", totalPerdidas);
 			card.put("totalRecusadas", totalRecusadas);
 			//CALCULANDO O PAROVEITAMENTO DO MOTORISTA
-			double aproveitamento = totalCorridas > 0 ? (double) totalFinalizadas / totalCorridas * 100 : 0;
+			long totalOportunidades = totalFinalizadas + totalPerdidas + totalRecusadas;
+			double aproveitamento = totalOportunidades > 0 ? (double) totalFinalizadas / totalOportunidades * 100 : 0;
 			card.put("aproveitamento", Math.round(aproveitamento * 10.0) / 10.0);
 			resultado.add(card);
 		}
@@ -235,8 +236,10 @@ public class CorridaController {
 	        card.put("mediaDiaria", totalCorridas > 0 ? (double) totalCorridas / diasNoMes : 0);
 	        long totalPerdidas = corridaExpiradaRepository.countByMesAno(mes, ano);
 	        long totalRecusadas = corridasRecusadaRepository.countByMesAno(mes, ano);
-	        double aproveitamento = totalCorridas > 0 ? (double) totalFinalizadas / totalCorridas * 100 : 0;
-
+	        //CALCULANDO O PAROVEITAMENTO DO MOTORISTA
+			long totalOportunidades = totalFinalizadas + totalPerdidas + totalRecusadas;
+			double aproveitamento = totalOportunidades > 0 ? (double) totalFinalizadas / totalOportunidades * 100 : 0;
+			
 	        card.put("totalPerdidas", totalPerdidas);
 	        card.put("totalRecusadas", totalRecusadas);
 	        card.put("aproveitamento", Math.round(aproveitamento * 10.0) / 10.0);
@@ -266,6 +269,8 @@ public class CorridaController {
 	        card.put("totalCorridas", totalCorridas);
 	        card.put("totalFaturado", totalFinalizadas * 10.0);
 	        card.put("mediaDiaria", totalCorridas > 0 ? (double) totalCorridas / diasNoMes : 0);
+	        
+	        //CALCULANDO O PAROVEITAMENTO DO MOTORISTA
 	        double aproveitamento = totalCorridas > 0 ? (double) totalFinalizadas / totalCorridas * 100 : 0;
 	        card.put("aproveitamento", Math.round(aproveitamento * 10.0) / 10.0);
 	        resultado.add(card);
@@ -309,7 +314,8 @@ public class CorridaController {
 	    }
 
 	    long diasNoPeriodo = (tsFim.getTime() - tsInicio.getTime()) / (1000 * 60 * 60 * 24) + 1;
-	    double aproveitamento = totalCorridas > 0 ? (double) totalFinalizadas / totalCorridas * 100 : 0;
+	    long totalOportunidades = totalFinalizadas + totalPerdidas + totalRecusadas;
+	    double aproveitamento = totalOportunidades > 0 ? (double) totalFinalizadas / totalOportunidades * 100 : 0;
 
 	    Map<String, Object> result = new HashMap<>();
 	    result.put("totalCorridas", totalCorridas);
