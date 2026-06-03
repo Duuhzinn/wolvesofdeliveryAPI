@@ -265,6 +265,7 @@ public class CorridaController {
 	        card.put("mes", meses[mes - 1]);
 	        card.put("totalCorridas", totalCorridas);
 	        card.put("totalFaturado", totalFinalizadas * 10.0);
+	        card.put("mediaDiaria", totalCorridas > 0 ? (double) totalCorridas / diasNoMes : 0);
 	        double aproveitamento = totalCorridas > 0 ? (double) totalFinalizadas / totalCorridas * 100 : 0;
 	        card.put("aproveitamento", Math.round(aproveitamento * 10.0) / 10.0);
 	        resultado.add(card);
