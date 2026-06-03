@@ -1,6 +1,7 @@
 package wolvesofdelivery.api.rest.controller;
 
 import java.sql.Timestamp;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +73,7 @@ public class PushNotificationController {
 					"Nova Corrida 🏍️", "Você tem uma nova corrida disponível!", corridaSalva.getId(), despachanteId);
 
 			messagingTemplate.convertAndSend("/topic/fila", usuarioId);
-			return ResponseEntity.ok(resposta);
+			return ResponseEntity.ok(Map.of("corridaId", corridaSalva.getId(), "resposta", resposta));
 		} else {
 			return ResponseEntity.badRequest().body("Usuário não encontrado");
 		}
