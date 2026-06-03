@@ -154,6 +154,20 @@ public class CorridaController {
 		return ResponseEntity.ok("Chamada cancelada!");
 		
 	}
+	
+	//CORRIDA EXPIRADA
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@PatchMapping(value = "/expireRace/{corridaId}", produces = "application/json")
+	public ResponseEntity<?> cancelarCorrida(@PathVariable Long corridaId) {
+		Corridas corrida = corridasRepository.findById(corridaId)
+	            .orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
+		corrida.setStatus_corrida("CANCELADA");
+		corrida.setTermino_corrida(new Timestamp(System.currentTimeMillis()));
+		corridasRepository.save(corrida);
+		return ResponseEntity.ok("Corrida cancelada!");
+	}
+	
 //_________________________________________________________________________
 
 	// _________COMEÇA O ENDPOINT DE CIENCIA DE DADOS_________
@@ -281,6 +295,8 @@ public class CorridaController {
 
 	    return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	
+	
 		
 }	
 
