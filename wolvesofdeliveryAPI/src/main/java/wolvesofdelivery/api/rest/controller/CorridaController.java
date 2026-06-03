@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 
 import wolvesofdelivery.api.rest.model.Corridas;
 import wolvesofdelivery.api.rest.model.Usuario;
+import wolvesofdelivery.api.rest.repository.CorridaExpiradaRepository;
+import wolvesofdelivery.api.rest.repository.CorridasRecusadaRepository;
 import wolvesofdelivery.api.rest.repository.CorridasRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 import wolvesofdelivery.api.rest.service.WebSocketService;
@@ -31,6 +33,10 @@ import org.springframework.http.ResponseEntity;
 @CrossOrigin(origins = "*")
 public class CorridaController {
 
+	@Autowired
+	private CorridasRecusadaRepository corridasRecusadaRepository;
+	@Autowired
+	private CorridaExpiradaRepository corridaExpiradaRepository;
 	@Autowired
 	private CorridasRepository corridasRepository;
 	@Autowired
@@ -162,7 +168,7 @@ public class CorridaController {
 	public ResponseEntity<?> cancelarCorrida(@PathVariable Long corridaId) {
 		Corridas corrida = corridasRepository.findById(corridaId)
 	            .orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
-		corrida.setStatus_corrida("CANCELADA");
+		corrida.setStatus_corrida("EXPIRADA");
 		corrida.setTermino_corrida(new Timestamp(System.currentTimeMillis()));
 		corridasRepository.save(corrida);
 		return ResponseEntity.ok("Corrida cancelada!");
@@ -191,9 +197,18 @@ public class CorridaController {
 	        card.put("totalCorridas", totalCorridas);
 	        card.put("totalFaturado", totalFinalizadas * 10.0);
 	        card.put("mediaDiaria", totalCorridas > 0 ? (double) totalCorridas / diasNoMes : 0);
-	        card.put("totalPerdidas", 0); // IMPLEMENTAR FUTURAMENTE
-	        card.put("totalRecusadas", 0); // IMPLEMENTAR FUTURAMENTE
-	        resultado.add(card);
+			long totalPerdidas = corridaExpiradaRepository.countByMotoristaIdAndDataExpiradaBetween(motoristaId,
+					Timestamp.valueOf(LocalDate.of(ano, mes, 1).atStartOfDay()), Timestamp.valueOf(
+							LocalDate.of(ano, mes, LocalDate.of(ano, mes, 1).lengthOfMonth()).atTime(23, 59, 59)));
+			long totalRecusadas = corridasRecusadaRepository.countByMotoristaIdAndDataRecusaBetween(motoristaId,
+					Timestamp.valueOf(LocalDate.of(ano, mes, 1).atStartOfDay()), Timestamp.valueOf(
+							LocalDate.of(ano, mes, LocalDate.of(ano, mes, 1).lengthOfMonth()).atTime(23, 59, 59)));
+			card.put("totalPerdidas", totalPerdidas);
+			card.put("totalRecusadas", totalRecusadas);
+			//CALCULANDO O PAROVEITAMENTO DO MOTORISTA
+			double aproveitamento = totalCorridas > 0 ? (double) totalFinalizadas / totalCorridas * 100 : 0;
+			card.put("aproveitamento", Math.round(aproveitamento * 10.0) / 10.0);
+			resultado.add(card);
 		}
 		return new ResponseEntity<>(resultado, HttpStatus.OK);
 	}
@@ -218,8 +233,13 @@ public class CorridaController {
 	        card.put("totalCorridas", totalCorridas);
 	        card.put("totalFaturado", totalFinalizadas * 10.0);
 	        card.put("mediaDiaria", totalCorridas > 0 ? (double) totalCorridas / diasNoMes : 0);
-	        card.put("totalPerdidas", 0); // IMPLEMENTAR FUTURAMENTE
-	        card.put("totalRecusadas", 0); // IMPLEMENTAR FUTURAMENTE
+	        long totalPerdidas = corridaExpiradaRepository.countByMesAno(mes, ano);
+	        long totalRecusadas = corridasRecusadaRepository.countByMesAno(mes, ano);
+	        double aproveitamento = totalCorridas > 0 ? (double) totalFinalizadas / totalCorridas * 100 : 0;
+
+	        card.put("totalPerdidas", totalPerdidas);
+	        card.put("totalRecusadas", totalRecusadas);
+	        card.put("aproveitamento", Math.round(aproveitamento * 10.0) / 10.0);
 	        card.put("motoristaTop", motoristaTop != null ? motoristaTop : "-");
 	        resultado.add(card);
 	    }
@@ -245,9 +265,8 @@ public class CorridaController {
 	        card.put("mes", meses[mes - 1]);
 	        card.put("totalCorridas", totalCorridas);
 	        card.put("totalFaturado", totalFinalizadas * 10.0);
-	        card.put("mediaDiaria", totalCorridas > 0 ? (double) totalCorridas / diasNoMes : 0);
-	        card.put("totalPerdidas", 0);   // IMPLEMENTAR FUTURAMENTE
-	        card.put("totalRecusadas", 0);  // IMPLEMENTAR FUTURAMENTE
+	        double aproveitamento = totalCorridas > 0 ? (double) totalFinalizadas / totalCorridas * 100 : 0;
+	        card.put("aproveitamento", Math.round(aproveitamento * 10.0) / 10.0);
 	        resultado.add(card);
 	    }
 
@@ -265,8 +284,10 @@ public class CorridaController {
 	    Timestamp tsInicio = Timestamp.valueOf(inicio + " 00:00:00");
 	    Timestamp tsFim = Timestamp.valueOf(fim + " 23:59:59");
 
-	    long totalCorridas;
-	    long totalFinalizadas;
+	    long totalCorridas = 0;
+	    long totalFinalizadas = 0;
+	    long totalPerdidas = 0;
+	    long totalRecusadas = 0;
 	    String motoristaTop = "-";
 
 	    if (clienteId != null) {
@@ -275,22 +296,27 @@ public class CorridaController {
 	    } else if (motoristaId != null) {
 	        totalCorridas = corridasRepository.countByMotoristaIdAndDataBetween(motoristaId, tsInicio, tsFim);
 	        totalFinalizadas = corridasRepository.countByMotoristaIdAndStatusAndDataBetween(motoristaId, "FINALIZADA", tsInicio, tsFim);
+	        totalPerdidas = corridaExpiradaRepository.countByMotoristaIdAndDataExpiradaBetween(motoristaId, tsInicio, tsFim);
+	        totalRecusadas = corridasRecusadaRepository.countByMotoristaIdAndDataRecusaBetween(motoristaId, tsInicio, tsFim);
 	    } else {
 	        totalCorridas = corridasRepository.countByDataBetween(tsInicio, tsFim);
 	        totalFinalizadas = corridasRepository.countByStatusAndDataBetween("FINALIZADA", tsInicio, tsFim);
+	        totalPerdidas = corridaExpiradaRepository.countByDataExpiradaBetween(tsInicio, tsFim);
+	        totalRecusadas = corridasRecusadaRepository.countByDataRecusaBetween(tsInicio, tsFim);
 	        motoristaTop = corridasRepository.findMotoristaTopByDataBetween(tsInicio, tsFim);
 	        if (motoristaTop == null) motoristaTop = "-";
 	    }
 
-	    // CALCULA DIAS NO PERÍODO
 	    long diasNoPeriodo = (tsFim.getTime() - tsInicio.getTime()) / (1000 * 60 * 60 * 24) + 1;
+	    double aproveitamento = totalCorridas > 0 ? (double) totalFinalizadas / totalCorridas * 100 : 0;
 
 	    Map<String, Object> result = new HashMap<>();
 	    result.put("totalCorridas", totalCorridas);
 	    result.put("totalFaturado", totalFinalizadas * 10.0);
 	    result.put("mediaDiaria", totalCorridas > 0 ? (double) totalCorridas / diasNoPeriodo : 0);
-	    result.put("totalPerdidas", 0);
-	    result.put("totalRecusadas", 0);
+	    result.put("totalPerdidas", totalPerdidas);
+	    result.put("totalRecusadas", totalRecusadas);
+	    result.put("aproveitamento", Math.round(aproveitamento * 10.0) / 10.0);
 	    result.put("motoristaTop", motoristaTop);
 
 	    return new ResponseEntity<>(result, HttpStatus.OK);
