@@ -12,7 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 
 @Entity
-public class CorridaRecusada implements Serializable {
+public class CorridaExpirada implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -28,13 +28,13 @@ public class CorridaRecusada implements Serializable {
 	@JoinColumn(name = "corrida_id")
 	private Corridas corrida;
 
-	private Timestamp dataRecusa;
+	private Timestamp dataExpirda;
 
 	public Long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -54,12 +54,12 @@ public class CorridaRecusada implements Serializable {
 		this.corrida = corrida;
 	}
 
-	public Timestamp getDataRecusa() {
-		return dataRecusa;
+	public Timestamp getDataExpirda() {
+		return dataExpirda;
 	}
 
-	public void setDataRecusa(Timestamp dataRecusa) {
-		this.dataRecusa = dataRecusa;
+	public void setDataExpirda(Timestamp dataExpirda) {
+		this.dataExpirda = dataExpirda;
 	}
 
 }

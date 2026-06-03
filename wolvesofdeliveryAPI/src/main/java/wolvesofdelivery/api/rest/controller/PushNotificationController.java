@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import wolvesofdelivery.api.rest.model.CorridaExpirada;
 import wolvesofdelivery.api.rest.model.Corridas;
 import wolvesofdelivery.api.rest.model.Firebasetoken;
 import wolvesofdelivery.api.rest.model.Usuario;
+import wolvesofdelivery.api.rest.repository.CorridaExpiradaRepository;
 import wolvesofdelivery.api.rest.repository.CorridasRepository;
 import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
@@ -30,6 +32,8 @@ import wolvesofdelivery.api.rest.service.FirebaseNotificationService;
 @RequestMapping(value = "/v1/pushnotification")
 public class PushNotificationController {
 
+	@Autowired
+	private CorridaExpiradaRepository corridaExpiradaRepository;
 	@Autowired
 	private CorridasRepository corridasRepository;
 	@Autowired
@@ -84,6 +88,16 @@ public class PushNotificationController {
 			if (firebasetoken == null) {
 				return ResponseEntity.badRequest().body("Usuário sem tokem FireBase");
 			}
+			
+			// REGISTRA A CORRIDA EXPIRADA
+			Corridas corrida = corridasRepository.findById(corridaId)
+	                .orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
+			CorridaExpirada expirada = new CorridaExpirada();
+			expirada.setMotorista(optional.get());
+			expirada.setCorrida(corrida);
+			expirada.setDataExpirda(new Timestamp(System.currentTimeMillis()));
+			corridaExpiradaRepository.save(expirada);
+			
 			String resposta = firebaseNotificationService.enviarNotificacaoPerdida(firebasetoken.getToken(),
 					"Corrida Perdida ❌", "Você perdeu uma corrida", corridaId);
 			// NOTIFICA VIA WEBSOCKET
