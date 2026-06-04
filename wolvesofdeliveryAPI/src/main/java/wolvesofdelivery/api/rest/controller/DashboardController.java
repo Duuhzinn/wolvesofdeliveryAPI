@@ -52,7 +52,11 @@ public class DashboardController {
 	    // FATURAMENTO DO DIA
 	    double faturamentoDia = finalizadasDia * 10.0;
 	    
-	    List<Usuario> nomesOnline = usuarioRepository.findByTipoUserOrderByNomeAsc("MOTORISTA");
+	    List<String> nomesOnline = usuarioRepository.findByTipoUserOrderByNomeAsc("MOTORISTA")
+	            .stream()
+	            .filter(m -> m.getStatus() == 1L)
+	            .map(Usuario::getNome)
+	            .collect(Collectors.toList());
 	    
 	    
 	    Map<String, Object> result = new HashMap<>();
