@@ -74,6 +74,7 @@ public class DashboardController {
 	    result.put("nomeAdmin", admin.getNome());
 	    result.put("totalMotoristas", totalMotoristas);
 	    result.put("totalMotoristasOnline", totalMotoristasOnline);
+	    result.put("totalClientes", totalClientes);
 	    result.put("clientesOnline", clientesOnline);
 	    result.put("totalClientesOnline", totalClientesOnline);
 	    result.put("corridasDia", corridasDia);
