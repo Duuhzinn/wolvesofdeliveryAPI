@@ -53,21 +53,32 @@ public class DashboardController {
 	    long finalizadasDia = corridasRepository.countByStatusAndDataBetween("FINALIZADA", inicioDia, fimDia);
 	    // FATURAMENTO DO DIA
 	    double faturamentoDia = finalizadasDia * 10.0;
-	    
-	    List<String> nomesOnline = usuarioRepository.findByTipoUserOrderByNomeAsc("MOTORISTA")
+	    //MOTORISTA ONLINE
+	    List<String> motoristaOnline = usuarioRepository.findByTipoUserOrderByNomeAsc("MOTORISTA")
 	            .stream()
 	            .filter(m -> m.getStatus() == 1L)
 	            .map(Usuario::getNome)
 	            .collect(Collectors.toList());
+	    // CLIENTES ONLINE
+	    List<String> clientesOnline = usuarioRepository.findByTipoUserOrderByNomeAsc("CLIENTE")
+	            .stream()
+	            .filter(c -> c.getStatus() != null && c.getStatus() == 1L)
+	            .map(Usuario::getNome)
+	            .collect(Collectors.toList());
+	    
+	    long totalClientesOnline = clientesOnline.size();
+	    long totalMotoristasOnline = motoristaOnline.size();
 	    
 	    
 	    Map<String, Object> result = new HashMap<>();
 	    result.put("nomeAdmin", admin.getNome());
 	    result.put("totalMotoristas", totalMotoristas);
-	    result.put("totalClientes", totalClientes);
+	    result.put("totalMotoristasOnline", totalMotoristasOnline);
+	    result.put("clientesOnline", clientesOnline);
+	    result.put("totalClientesOnline", totalClientesOnline);
 	    result.put("corridasDia", corridasDia);
 	    result.put("faturamentoDia", faturamentoDia);
-	    result.put("motoristasOnline", nomesOnline);
+	    result.put("motoristasOnline", motoristaOnline);
 	    
 	    return new ResponseEntity<>(result, HttpStatus.OK);
 		
