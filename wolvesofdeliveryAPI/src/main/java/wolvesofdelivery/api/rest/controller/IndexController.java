@@ -1,6 +1,5 @@
 package wolvesofdelivery.api.rest.controller;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +28,8 @@ import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.RoleRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 
-//liberando o acesso para qualquer sistema sera permitido
+
+//LIBERANDO O ACESSO PARA QUALQUER SISTEMA
 @CrossOrigin(origins = "*")
 
 @RestController
@@ -56,8 +56,8 @@ public class IndexController {
 
 	// __________________CONSULTANDO USUÁRIO POR ID_____________________//
 
-	@CacheEvict(value = "cacheUser", allEntries = true) // se tiver cache que nao é usado, vai remover
-	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO, VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VOU TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<Usuario> init(@PathVariable(value = "id") Long id) {
 
@@ -110,8 +110,8 @@ public class IndexController {
 
 	// ___________________ATUALIZANDO DADOS USUÁRIO________________________//
 
-	@CacheEvict(value = "cacheUser", allEntries = true) // se tiver cache que nao é usado, vai remover
-	@CachePut("cacheUser") // Tem mudanças, vou trazer e colocar no chache
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO, VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VOU TRAZER E COLOCAR NO CACHE
 	@PutMapping(value = "/updateUser", produces = "Application/json")
 	public ResponseEntity<?> atualizausuario(@RequestBody Usuario usuario) {
 
@@ -174,5 +174,18 @@ public class IndexController {
 		return new ResponseEntity<>(usuario, HttpStatus.OK);
 
 	}
+	
+	//SETANDO STATUS 1 - ONLINE E 2 OFFLINE
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO, VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VOU TRAZER E COLOCAR NO CACHE
+	@PatchMapping(value = "/status/{id}/{status}", produces = "application/json")
+	public ResponseEntity<?> atualizarStatus(@PathVariable Long id, @PathVariable Long status) {
+	    Usuario usuario = usuarioRepository.findById(id)
+	            .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+	    usuario.setStatus(status);
+	    usuarioRepository.save(usuario);
+	    return ResponseEntity.ok().build();
+	}
+	
 
 }
