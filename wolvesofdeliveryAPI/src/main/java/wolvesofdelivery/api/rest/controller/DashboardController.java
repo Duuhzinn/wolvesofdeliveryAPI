@@ -45,6 +45,8 @@ public class DashboardController {
 	    Timestamp fimDia = Timestamp.valueOf(LocalDate.now().atTime(23, 59, 59));
 	    // TOTAL DE MOTORISTAS
 	    long totalMotoristas = usuarioRepository.findByTipoUserOrderByNomeAsc("MOTORISTA").size();
+	    //TOTAL DE CLIENTES
+	    long totalClientes = usuarioRepository.findByTipoUserOrderByNomeAsc("CLIENTE").size();
 	    // CORRIDAS DO DIA
 	    long corridasDia = corridasRepository.countByDataBetween(inicioDia, fimDia);
 	    // FINALIZADAS DO DIA
@@ -62,6 +64,7 @@ public class DashboardController {
 	    Map<String, Object> result = new HashMap<>();
 	    result.put("nomeAdmin", admin.getNome());
 	    result.put("totalMotoristas", totalMotoristas);
+	    result.put("totalClientes", totalClientes);
 	    result.put("corridasDia", corridasDia);
 	    result.put("faturamentoDia", faturamentoDia);
 	    result.put("motoristasOnline", nomesOnline);
