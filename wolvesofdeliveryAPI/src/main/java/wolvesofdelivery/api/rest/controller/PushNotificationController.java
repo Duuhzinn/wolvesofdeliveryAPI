@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -48,7 +49,8 @@ public class PushNotificationController {
 
 	@PostMapping(value = "/send/{usuarioId}/{despachanteId}", produces = "application/json")
 	public ResponseEntity<?> enviarNotificacaoSemCorrida(@PathVariable Long usuarioId,
-			@PathVariable Long despachanteId) {
+			@PathVariable Long despachanteId,
+			@RequestBody Map<String, String> body) {
 		Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
 		if (optional.isPresent()) {
 			Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
@@ -60,6 +62,7 @@ public class PushNotificationController {
 			Usuario motorista = optional.get();
 			Usuario despachante = usuarioRepository.findById(despachanteId)
 					.orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
+			String endereco = body.get("endereco");
 
 			Corridas corrida = new Corridas();
 			corrida.setMotorista(motorista);
@@ -67,6 +70,7 @@ public class PushNotificationController {
 			corrida.setUsuario(despachante);
 			corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
 			corrida.setStatus_corrida("AGUARDANDO");
+			corrida.setEndereco_entrega(endereco);
 			Corridas corridaSalva = corridasRepository.save(corrida);
 
 			String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
