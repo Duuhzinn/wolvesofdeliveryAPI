@@ -94,7 +94,7 @@ public class DashboardController {
 	//DASHBOARD DO MOTORISTA
 	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
-	@GetMapping(value = "/dashboard/motorista/{motoristaId}", produces = "application/json")
+	@GetMapping(value = "/motorista/{motoristaId}", produces = "application/json")
 	public ResponseEntity<?> dashboardMotorista(@PathVariable Long motoristaId) {
 		
 		Timestamp inicioDia = Timestamp.valueOf(LocalDate.now().atStartOfDay());
