@@ -2,6 +2,7 @@ package wolvesofdelivery.api.rest.controller;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,55 +41,73 @@ public class DashboardController {
 	private CorridasRepository corridasRepository;
 	
 	//_______DASHBOARD DE ADMIN_______
-	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
-	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@CacheEvict(value = "cacheUser", allEntries = true)
+	@CachePut("cacheUser")
 	@GetMapping(value = "/admin/{adminId}", produces = "application/json")
 	public ResponseEntity<?> dashboardAdmin(@PathVariable Long adminId){
-		Usuario admin = usuarioRepository.findById(adminId)
+	    Usuario admin = usuarioRepository.findById(adminId)
 	            .orElseThrow(() -> new RuntimeException("Admin não encontrado"));
-		// HOJE
-		Timestamp inicioDia = Timestamp.valueOf(LocalDate.now().atStartOfDay());
+
+	    Timestamp inicioDia = Timestamp.valueOf(LocalDate.now().atStartOfDay());
 	    Timestamp fimDia = Timestamp.valueOf(LocalDate.now().atTime(23, 59, 59));
-	    // TOTAL DE MOTORISTAS
+
+	    // TOTAIS
 	    long totalMotoristas = usuarioRepository.findByTipoUserOrderByNomeAsc("MOTORISTA").size();
-	    //TOTAL DE CLIENTES
 	    long totalClientes = usuarioRepository.findByTipoUserOrderByNomeAsc("CLIENTE").size();
-	    // CORRIDAS DO DIA
-	    long corridasDia = corridasRepository.countByDataBetween(inicioDia, fimDia);
-	    // FINALIZADAS DO DIA
-	    long finalizadasDia = corridasRepository.countByStatusAndDataBetween("FINALIZADA", inicioDia, fimDia);
-	    // FATURAMENTO DO DIA
-	    double faturamentoDia = finalizadasDia * 10.0;
-	    //MOTORISTA ONLINE
+	    long corridasDia = corridasRepository.countByStatusAndDataBetween("FINALIZADA", inicioDia, fimDia);
+	    long recusadasDia = corridasRecusadaRepository.countByDataRecusaBetween(inicioDia, fimDia);
+	    long expiradasDia = corridaExpiradaRepository.countByDataExpiradaBetween(inicioDia, fimDia);
+	    double faturamentoDia = corridasDia * 10.0;
+
+	    // MOTORISTAS QUE RECUSARAM
+	    List<Object[]> recusasPorMotorista = corridasRecusadaRepository.findMotoristasComRecusasNoDia(inicioDia, fimDia);
+	    List<Map<String, Object>> motoristasRecusaram = new ArrayList<>();
+	    for (Object[] row : recusasPorMotorista) {
+	        Map<String, Object> m = new HashMap<>();
+	        m.put("nome", row[0]);
+	        m.put("quantidade", row[1]);
+	        motoristasRecusaram.add(m);
+	    }
+
+	    // MOTORISTAS QUE PERDERAM
+	    List<Object[]> perdasPorMotorista = corridaExpiradaRepository.findMotoristasComPerdidasNoDia(inicioDia, fimDia);
+	    List<Map<String, Object>> motoristasPerderem = new ArrayList<>();
+	    for (Object[] row : perdasPorMotorista) {
+	        Map<String, Object> m = new HashMap<>();
+	        m.put("nome", row[0]);
+	        m.put("quantidade", row[1]);
+	        motoristasPerderem.add(m);
+	    }
+
+	    // ONLINE
 	    List<String> motoristaOnline = usuarioRepository.findByTipoUserOrderByNomeAsc("MOTORISTA")
 	            .stream()
 	            .filter(m -> m.getStatus() == 1L)
 	            .map(Usuario::getNome)
 	            .collect(Collectors.toList());
-	    // CLIENTES ONLINE
+
 	    List<String> clientesOnline = usuarioRepository.findByTipoUserOrderByNomeAsc("CLIENTE")
 	            .stream()
 	            .filter(c -> c.getStatus() != null && c.getStatus() == 1L)
 	            .map(Usuario::getNome)
 	            .collect(Collectors.toList());
-	    
-	    long totalClientesOnline = clientesOnline.size();
-	    long totalMotoristasOnline = motoristaOnline.size();
-	    
-	    
+
 	    Map<String, Object> result = new HashMap<>();
 	    result.put("nomeAdmin", admin.getNome());
 	    result.put("totalMotoristas", totalMotoristas);
-	    result.put("totalMotoristasOnline", totalMotoristasOnline);
+	    result.put("totalMotoristasOnline", motoristaOnline.size());
 	    result.put("totalClientes", totalClientes);
+	    result.put("totalClientesOnline", clientesOnline.size());
 	    result.put("clientesOnline", clientesOnline);
-	    result.put("totalClientesOnline", totalClientesOnline);
+	    result.put("motoristasOnline", motoristaOnline);
 	    result.put("corridasDia", corridasDia);
 	    result.put("faturamentoDia", faturamentoDia);
-	    result.put("motoristasOnline", motoristaOnline);
-	    
+	    result.put("recusadasDia", recusadasDia);
+	    result.put("expiradasDia", expiradasDia);
+	    result.put("motoristasRecusaram", motoristasRecusaram);
+	    result.put("motoristasPerderem", motoristasPerderem);
+
 	    return new ResponseEntity<>(result, HttpStatus.OK);
-		
 	}
 	
 	//DASHBOARD DO MOTORISTA

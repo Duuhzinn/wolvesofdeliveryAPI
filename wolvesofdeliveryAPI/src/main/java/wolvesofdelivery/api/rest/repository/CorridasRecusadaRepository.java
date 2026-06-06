@@ -1,6 +1,7 @@
 package wolvesofdelivery.api.rest.repository;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,4 +25,7 @@ public interface CorridasRecusadaRepository extends JpaRepository<CorridaRecusad
 	long countByMesAno(@Param("mes") int mes, @Param("ano") int ano);
 	
 	long countByDataRecusaBetween(Timestamp inicio, Timestamp fim);
+	
+	@Query("SELECT c.motorista.nome, COUNT(c) FROM CorridaRecusada c WHERE c.dataRecusa BETWEEN :inicio AND :fim GROUP BY c.motorista.nome ORDER BY COUNT(c) DESC")
+	List<Object[]> findMotoristasComRecusasNoDia(@Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
 }
