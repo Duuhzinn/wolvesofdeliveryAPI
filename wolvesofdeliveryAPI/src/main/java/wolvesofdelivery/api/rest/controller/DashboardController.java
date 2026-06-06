@@ -119,6 +119,25 @@ public class DashboardController {
 	    		
 	}
 	
+	// DASHBOARD DO CLIENTE - APENAS FINALIZADAS
+	@GetMapping(value = "/cliente/{clienteId}", produces = "application/json")
+	public ResponseEntity<?> dashboardCliente(@PathVariable Long clienteId) {
+
+	    Timestamp inicioDia = Timestamp.valueOf(LocalDate.now().atStartOfDay());
+	    Timestamp fimDia = Timestamp.valueOf(LocalDate.now().atTime(23, 59, 59));
+
+	    long totalFinalizadas = corridasRepository.countByClienteIdAndStatusAndDataBetween(clienteId, "FINALIZADA", inicioDia, fimDia);
+
+	    double aproveitamento = totalFinalizadas > 0 ? 100.0 : 0.0;
+
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("totalCorridas", totalFinalizadas);
+	    result.put("totalFaturado", totalFinalizadas * 10.0);
+	    result.put("aproveitamento", aproveitamento);
+
+	    return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+	
 	
 
 }
