@@ -16,7 +16,7 @@ public class ResetStatusScheduler {
     private WebSocketService webSocketService;
 
     // EXECUTA TODO DIA AS 05:00 DA MANHÃ
-    @Scheduled(cron = "0 10 16 * * *")
+    @Scheduled(cron = "0 0 5 * * *")
     public void resetarStatusMotoristas() {
         System.out.println("Resetando status dos motoristas para OFFLINE...");
 
