@@ -21,9 +21,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import wolvesofdelivery.api.rest.model.ConfiguracaoCorrida;
 import wolvesofdelivery.api.rest.model.Firebasetoken;
 import wolvesofdelivery.api.rest.model.Role;
 import wolvesofdelivery.api.rest.model.Usuario;
+import wolvesofdelivery.api.rest.repository.ConfiguracaoCorridaRepository;
 import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.RoleRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
@@ -40,6 +42,8 @@ public class IndexController {
 	private UsuarioRepository usuarioRepository;
 	@Autowired
 	private RoleRepository roleRepository;
+	@Autowired
+	private ConfiguracaoCorridaRepository configuracaoCorridaRepository;
 
 	// ________________________CONSULTANDO USUÁRIO NOME_______________________________//
 
@@ -105,6 +109,15 @@ public class IndexController {
 		usuario.setRoles(List.of(role));
 
 		Usuario usuarioSalvo = usuarioRepository.save(usuario);
+		
+		//CRIA CONFIG DA CORRIDA PARA CADA USUARIO CADASTRADO
+		if (usuario.getTipoUser().equals("CLIENTE") || usuario.getTipoUser().equals("ADMIN")) {
+		    ConfiguracaoCorrida configuracaoCorrida = new ConfiguracaoCorrida();
+		    configuracaoCorrida.setUsuario(usuarioSalvo);
+		    configuracaoCorrida.setValor(null);
+		    configuracaoCorridaRepository.save(configuracaoCorrida);
+		}
+		
 		return new ResponseEntity<>(usuarioSalvo, HttpStatus.OK);
 	}
 
