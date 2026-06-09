@@ -1,5 +1,7 @@
 package wolvesofdelivery.api.rest.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -49,6 +51,15 @@ public class ConfiguracaoCorridaController {
 		config.setValor(body.getValor());
         configuracaoCorridaRepository.save(config);
         return new ResponseEntity<>(config, HttpStatus.OK);
+	}
+	
+	// ___________ADMIN LISTA TODOS OS CLIENTES COM SUA CONFIG DE CORRIDA___________//
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NÃO É USADO, VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA?, VOU TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/clientes", produces = "application/json")
+	public ResponseEntity<?> listarClientes() {
+	    List<ConfiguracaoCorrida> configs = configuracaoCorridaRepository.findByUsuario_TipoUser("CLIENTE");
+	    return new ResponseEntity<>(configs, HttpStatus.OK);
 	}
 	
 
