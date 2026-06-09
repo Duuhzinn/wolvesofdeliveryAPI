@@ -20,7 +20,7 @@ import wolvesofdelivery.api.rest.repository.ConfiguracaoCorridaRepository;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(value = "/v1/configuracaocorrida")
+@RequestMapping(value = "/v1/configuration")
 public class ConfiguracaoCorridaController {
 	
 	@Autowired
@@ -29,7 +29,7 @@ public class ConfiguracaoCorridaController {
 	// ___________BUSCAR CONFIG POR USUARIO_ID___________//
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NÃO É USADO, VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA?, VOU TRAZER E COLOCAR NO CACHE
-	@GetMapping(value ="/{usuarioId}", produces = "application/json")
+	@GetMapping(value ="/race/{usuarioId}", produces = "application/json")
 	public ResponseEntity<?> buscarPorUsuario(@PathVariable Long usuarioId){
 		ConfiguracaoCorrida config = configuracaoCorridaRepository.findByUsuarioId(usuarioId);
 		
@@ -41,7 +41,7 @@ public class ConfiguracaoCorridaController {
 	}
 	
 	// ___________CLIENTE OU ADMIN ATUALIZA UM ESPECÍFICO___________//
-	@PatchMapping(value = "/update/{usuarioId}", produces = "application/json")
+	@PatchMapping(value = "/race/update/{usuarioId}", produces = "application/json")
 	public ResponseEntity<?> atualizarPorUsuario(@PathVariable Long usuarioId, @RequestBody ConfiguracaoCorrida body) {
 		ConfiguracaoCorrida config = configuracaoCorridaRepository.findByUsuarioId(usuarioId);
 		
@@ -54,7 +54,7 @@ public class ConfiguracaoCorridaController {
 	}
 	
 	// ___________ADMIN ATUALIZA TODOS DE UMA VEZ___________//
-	@PatchMapping(value = "/updateAll", produces = "application/json")
+	@PatchMapping(value = "/race/updateAll", produces = "application/json")
 	public ResponseEntity<?> atualizarTodos(@RequestBody ConfiguracaoCorrida body) {
 	    List<ConfiguracaoCorrida> todos = configuracaoCorridaRepository.findAll();
 	    for (ConfiguracaoCorrida config : todos) {
@@ -67,7 +67,7 @@ public class ConfiguracaoCorridaController {
 	// ___________ADMIN LISTA TODOS OS CLIENTES COM SUA CONFIG DE CORRIDA___________//
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NÃO É USADO, VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA?, VOU TRAZER E COLOCAR NO CACHE
-	@GetMapping(value = "/clients", produces = "application/json")
+	@GetMapping(value = "/race/clients", produces = "application/json")
 	public ResponseEntity<?> listarClientes() {
 	    List<ConfiguracaoCorrida> configs = configuracaoCorridaRepository.findByUsuario_TipoUser("CLIENTE");
 	    return new ResponseEntity<>(configs, HttpStatus.OK);
