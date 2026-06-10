@@ -29,31 +29,31 @@ public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 	//________________ESTATISTICAS_______________
 
 	// CONTA CORRIDAS DO MOTORISTA POR MÊS/ANO
-	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.motorista.id = :motoristaId AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.motorista.id = :motoristaId AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
 	long countByMotoristaIdAndMesAno(@Param("motoristaId") Long motoristaId, @Param("mes") int mes, @Param("ano") int ano);
 
 	// CONTA CORRIDAS DO MOTORISTA POR STATUS E MÊS/ANO
-	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
 	long countByMotoristaIdAndStatusAndMesAno(@Param("motoristaId") Long motoristaId, @Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
 
 	// CONTA TODAS AS CORRIDAS POR MÊS/ANO (ADM)
-	@Query("SELECT COUNT(c) FROM Corridas c WHERE MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
 	long countByMesAno(@Param("mes") int mes, @Param("ano") int ano);
 
 	// CONTA CORRIDAS POR STATUS E MÊS/ANO (ADM)
-	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
 	long countByStatusAndMesAno(@Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
 
 	// MOTORISTA QUE MAIS RODOU NO MÊS (ADM)
-	@Query("SELECT c.motorista.nome FROM Corridas c WHERE MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano AND c.motorista IS NOT NULL GROUP BY c.motorista.id, c.motorista.nome ORDER BY COUNT(c) DESC LIMIT 1")
+	@Query("SELECT c.motorista.nome FROM Corridas c WHERE EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano AND c.motorista IS NOT NULL GROUP BY c.motorista.id, c.motorista.nome ORDER BY COUNT(c) DESC LIMIT 1")
 	String findMotoristaTopByMesAno(@Param("mes") int mes, @Param("ano") int ano);
 
 	// CONTA CORRIDAS DO CLIENTE POR MÊS/ANO
-	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.cliente.id = :clienteId AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.cliente.id = :clienteId AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
 	long countByClienteIdAndMesAno(@Param("clienteId") Long clienteId, @Param("mes") int mes, @Param("ano") int ano);
 
 	// CONTA CORRIDAS DO CLIENTE POR STATUS E MÊS/ANO
-	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
 	long countByClienteIdAndStatusAndMesAno(@Param("clienteId") Long clienteId, @Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
 
 	// CONTAGEM POR PERÍODO - ADMIN
@@ -83,15 +83,15 @@ public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 	//________________SOMA DO VALOR DAS CORRIDAS_______________
 
 	// SOMA VALOR DAS CORRIDAS DO MOTORISTA POR STATUS E MÊS/ANO
-	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
 	BigDecimal sumValorByMotoristaIdAndStatusAndMesAno(@Param("motoristaId") Long motoristaId, @Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
 
 	// SOMA VALOR DE TODAS AS CORRIDAS POR STATUS E MÊS/ANO (ADM)
-	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
 	BigDecimal sumValorByStatusAndMesAno(@Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
 
 	// SOMA VALOR DAS CORRIDAS DO CLIENTE POR STATUS E MÊS/ANO
-	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
 	BigDecimal sumValorByClienteIdAndStatusAndMesAno(@Param("clienteId") Long clienteId, @Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
 
 	// SOMA VALOR POR PERÍODO - ADMIN
