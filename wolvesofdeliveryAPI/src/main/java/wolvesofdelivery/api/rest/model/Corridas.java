@@ -1,6 +1,7 @@
 package wolvesofdelivery.api.rest.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,6 +33,7 @@ public class Corridas implements Serializable {
 	private Timestamp inicio_corrida;
 	private Timestamp termino_corrida;
 	private String status_corrida;
+	private BigDecimal valor_Corrida;
 
 	@JsonIgnore
 	@ManyToOne
@@ -123,5 +125,15 @@ public class Corridas implements Serializable {
 	public void setMotorista(Usuario motorista) {
 		this.motorista = motorista;
 	}
+
+	public BigDecimal getValor_Corrida() {
+		return valor_Corrida;
+	}
+
+	public void setValor_Corrida(BigDecimal valor_Corrida) {
+		this.valor_Corrida = valor_Corrida;
+	}
+	
+	
 
 }

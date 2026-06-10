@@ -1,5 +1,6 @@
 package wolvesofdelivery.api.rest.controller;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Map;
 import java.util.Optional;
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import wolvesofdelivery.api.rest.model.ConfiguracaoCorrida;
 import wolvesofdelivery.api.rest.model.CorridaExpirada;
 import wolvesofdelivery.api.rest.model.Corridas;
 import wolvesofdelivery.api.rest.model.Firebasetoken;
 import wolvesofdelivery.api.rest.model.Usuario;
+import wolvesofdelivery.api.rest.repository.ConfiguracaoCorridaRepository;
 import wolvesofdelivery.api.rest.repository.CorridaExpiradaRepository;
 import wolvesofdelivery.api.rest.repository.CorridasRepository;
 import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
@@ -46,6 +49,8 @@ public class PushNotificationController {
 	private FirebaseNotificationService firebaseNotificationService;
 	@Autowired
 	private SimpMessagingTemplate messagingTemplate;
+	@Autowired
+	private ConfiguracaoCorridaRepository configuracaoCorridaRepository;
 
 	@PostMapping(value = "/send/{usuarioId}/{despachanteId}", produces = "application/json")
 	public ResponseEntity<?> enviarNotificacaoSemCorrida(@PathVariable Long usuarioId,
@@ -63,6 +68,11 @@ public class PushNotificationController {
 			Usuario despachante = usuarioRepository.findById(despachanteId)
 					.orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
 			String endereco = body.get("endereco");
+			
+			//BUSCA O VALOR DA CORRIDA DO DESPACHANTE
+			ConfiguracaoCorrida configuracaoCorrida = configuracaoCorridaRepository.findByUsuarioId(despachanteId);
+			BigDecimal valorCorrida = (configuracaoCorrida != null && configuracaoCorrida.getValor() != null)
+					? configuracaoCorrida.getValor() : BigDecimal.ZERO;
 
 			Corridas corrida = new Corridas();
 			corrida.setMotorista(motorista);
@@ -71,6 +81,7 @@ public class PushNotificationController {
 			corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
 			corrida.setStatus_corrida("AGUARDANDO");
 			corrida.setEndereco_entrega(endereco);
+			corrida.setValor_Corrida(valorCorrida);
 			Corridas corridaSalva = corridasRepository.save(corrida);
 
 			String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
