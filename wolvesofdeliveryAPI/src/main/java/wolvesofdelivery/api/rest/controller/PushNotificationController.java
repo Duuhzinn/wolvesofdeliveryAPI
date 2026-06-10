@@ -81,7 +81,7 @@ public class PushNotificationController {
 			corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
 			corrida.setStatus_corrida("AGUARDANDO");
 			corrida.setEndereco_entrega(endereco);
-			corrida.setValor_Corrida(valorCorrida);
+			corrida.setValor_corrida(valorCorrida);
 			Corridas corridaSalva = corridasRepository.save(corrida);
 
 			String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),

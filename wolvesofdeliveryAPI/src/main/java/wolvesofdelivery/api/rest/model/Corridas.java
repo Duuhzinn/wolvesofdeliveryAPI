@@ -33,7 +33,7 @@ public class Corridas implements Serializable {
 	private Timestamp inicio_corrida;
 	private Timestamp termino_corrida;
 	private String status_corrida;
-	private BigDecimal valor_Corrida;
+	private BigDecimal valor_corrida;
 
 	@JsonIgnore
 	@ManyToOne
@@ -126,12 +126,12 @@ public class Corridas implements Serializable {
 		this.motorista = motorista;
 	}
 
-	public BigDecimal getValor_Corrida() {
-		return valor_Corrida;
+	public BigDecimal getValor_corrida() {
+		return valor_corrida;
 	}
 
-	public void setValor_Corrida(BigDecimal valor_Corrida) {
-		this.valor_Corrida = valor_Corrida;
+	public void setValor_corrida(BigDecimal valor_corrida) {
+		this.valor_corrida = valor_corrida;
 	}
 	
 	
