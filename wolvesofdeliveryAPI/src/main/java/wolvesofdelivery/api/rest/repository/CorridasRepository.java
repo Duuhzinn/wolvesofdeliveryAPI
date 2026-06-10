@@ -83,26 +83,25 @@ public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 	//________________SOMA DO VALOR DAS CORRIDAS_______________
 
 	// SOMA VALOR DAS CORRIDAS DO MOTORISTA POR STATUS E MÊS/ANO
-	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
+	@Query(value = "SELECT COALESCE(SUM(c.valor), 0) FROM corridas c WHERE c.motorista_id = :motoristaId AND c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano", nativeQuery = true)
 	BigDecimal sumValorByMotoristaIdAndStatusAndMesAno(@Param("motoristaId") Long motoristaId, @Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
 
 	// SOMA VALOR DE TODAS AS CORRIDAS POR STATUS E MÊS/ANO (ADM)
-	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
+	@Query(value = "SELECT COALESCE(SUM(c.valor), 0) FROM corridas c WHERE c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano", nativeQuery = true)
 	BigDecimal sumValorByStatusAndMesAno(@Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
 
 	// SOMA VALOR DAS CORRIDAS DO CLIENTE POR STATUS E MÊS/ANO
-	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano")
+	@Query(value = "SELECT COALESCE(SUM(c.valor), 0) FROM corridas c WHERE c.cliente_id = :clienteId AND c.status_corrida = :status AND EXTRACT(MONTH FROM c.data_chamada) = :mes AND EXTRACT(YEAR FROM c.data_chamada) = :ano", nativeQuery = true)
 	BigDecimal sumValorByClienteIdAndStatusAndMesAno(@Param("clienteId") Long clienteId, @Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
 
 	// SOMA VALOR POR PERÍODO - ADMIN
-	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim")
+	@Query(value = "SELECT COALESCE(SUM(c.valor), 0) FROM corridas c WHERE c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim", nativeQuery = true)
 	BigDecimal sumValorByStatusAndDataBetween(@Param("status") String status, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
 
 	// SOMA VALOR POR PERÍODO - CLIENTE
-	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim")
+	@Query(value = "SELECT COALESCE(SUM(c.valor), 0) FROM corridas c WHERE c.cliente_id = :clienteId AND c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim", nativeQuery = true)
 	BigDecimal sumValorByClienteIdAndStatusAndDataBetween(@Param("clienteId") Long clienteId, @Param("status") String status, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
 
 	// SOMA VALOR POR PERÍODO - MOTORISTA
-	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim")
-	BigDecimal sumValorByMotoristaIdAndStatusAndDataBetween(@Param("motoristaId") Long motoristaId, @Param("status") String status, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
-}
+	@Query(value = "SELECT COALESCE(SUM(c.valor), 0) FROM corridas c WHERE c.motorista_id = :motoristaId AND c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim", nativeQuery = true)
+	BigDecimal sumValorByMotoristaIdAndStatusAndDataBetween(@Param("motoristaId") Long motoristaId, @Param("status") String status, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);}
