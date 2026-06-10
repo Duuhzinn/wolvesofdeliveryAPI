@@ -8,8 +8,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Optional;
 
 import wolvesofdelivery.api.rest.model.Corridas;
 
@@ -18,16 +18,16 @@ import wolvesofdelivery.api.rest.model.Corridas;
 public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 
 	@Query("SELECT c FROM Corridas c WHERE c.status_corrida = :status ORDER BY c.id DESC")
-	Page <Corridas> findByStatusOrderByIdDesc(@Param("status") String status, Pageable pageable);
+	Page<Corridas> findByStatusOrderByIdDesc(@Param("status") String status, Pageable pageable);
 
 	@Query("SELECT c FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status ORDER BY c.id DESC")
-	Page <Corridas> findByMotoristaIdAndStatusOrderByIdDesc(@Param("motoristaId") Long motoristaId, @Param("status") String status, Pageable pageable);
+	Page<Corridas> findByMotoristaIdAndStatusOrderByIdDesc(@Param("motoristaId") Long motoristaId, @Param("status") String status, Pageable pageable);
 
 	@Query("SELECT c FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status ORDER BY c.id DESC")
-	Page <Corridas> findByClienteIdAndStatusOrderByIdDesc(@Param("clienteId") Long clienteId, @Param("status") String status, Pageable pageable);
-	
+	Page<Corridas> findByClienteIdAndStatusOrderByIdDesc(@Param("clienteId") Long clienteId, @Param("status") String status, Pageable pageable);
+
 	//________________ESTATISTICAS_______________
-	
+
 	// CONTA CORRIDAS DO MOTORISTA POR MÊS/ANO
 	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.motorista.id = :motoristaId AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
 	long countByMotoristaIdAndMesAno(@Param("motoristaId") Long motoristaId, @Param("mes") int mes, @Param("ano") int ano);
@@ -47,7 +47,7 @@ public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 	// MOTORISTA QUE MAIS RODOU NO MÊS (ADM)
 	@Query("SELECT c.motorista.nome FROM Corridas c WHERE MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano AND c.motorista IS NOT NULL GROUP BY c.motorista.id, c.motorista.nome ORDER BY COUNT(c) DESC LIMIT 1")
 	String findMotoristaTopByMesAno(@Param("mes") int mes, @Param("ano") int ano);
-	
+
 	// CONTA CORRIDAS DO CLIENTE POR MÊS/ANO
 	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.cliente.id = :clienteId AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
 	long countByClienteIdAndMesAno(@Param("clienteId") Long clienteId, @Param("mes") int mes, @Param("ano") int ano);
@@ -55,7 +55,7 @@ public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 	// CONTA CORRIDAS DO CLIENTE POR STATUS E MÊS/ANO
 	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
 	long countByClienteIdAndStatusAndMesAno(@Param("clienteId") Long clienteId, @Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
-	
+
 	// CONTAGEM POR PERÍODO - ADMIN
 	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.data_chamada BETWEEN :inicio AND :fim")
 	long countByDataBetween(@Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
@@ -79,5 +79,30 @@ public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 
 	@Query("SELECT COUNT(c) FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim")
 	long countByMotoristaIdAndStatusAndDataBetween(@Param("motoristaId") Long motoristaId, @Param("status") String status, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
-	
+
+	//________________SOMA DO VALOR DAS CORRIDAS_______________
+
+	// SOMA VALOR DAS CORRIDAS DO MOTORISTA POR STATUS E MÊS/ANO
+	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	BigDecimal sumValorByMotoristaIdAndStatusAndMesAno(@Param("motoristaId") Long motoristaId, @Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
+
+	// SOMA VALOR DE TODAS AS CORRIDAS POR STATUS E MÊS/ANO (ADM)
+	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	BigDecimal sumValorByStatusAndMesAno(@Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
+
+	// SOMA VALOR DAS CORRIDAS DO CLIENTE POR STATUS E MÊS/ANO
+	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND MONTH(c.data_chamada) = :mes AND YEAR(c.data_chamada) = :ano")
+	BigDecimal sumValorByClienteIdAndStatusAndMesAno(@Param("clienteId") Long clienteId, @Param("status") String status, @Param("mes") int mes, @Param("ano") int ano);
+
+	// SOMA VALOR POR PERÍODO - ADMIN
+	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim")
+	BigDecimal sumValorByStatusAndDataBetween(@Param("status") String status, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
+
+	// SOMA VALOR POR PERÍODO - CLIENTE
+	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim")
+	BigDecimal sumValorByClienteIdAndStatusAndDataBetween(@Param("clienteId") Long clienteId, @Param("status") String status, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
+
+	// SOMA VALOR POR PERÍODO - MOTORISTA
+	@Query("SELECT COALESCE(SUM(c.valor), 0) FROM Corridas c WHERE c.motorista.id = :motoristaId AND c.status_corrida = :status AND c.data_chamada BETWEEN :inicio AND :fim")
+	BigDecimal sumValorByMotoristaIdAndStatusAndDataBetween(@Param("motoristaId") Long motoristaId, @Param("status") String status, @Param("inicio") Timestamp inicio, @Param("fim") Timestamp fim);
 }
