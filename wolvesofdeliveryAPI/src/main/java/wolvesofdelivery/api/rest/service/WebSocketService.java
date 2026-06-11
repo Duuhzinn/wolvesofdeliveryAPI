@@ -1,5 +1,7 @@
 package wolvesofdelivery.api.rest.service;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -16,5 +18,9 @@ public class WebSocketService {
     
     public void notificarRecusaMotorista() {
         messagingTemplate.convertAndSend("/topic/recusa", "recusou");
+    }
+    
+    public void notificarLocalizacaoMotorista(Map<String, Object> payload) {
+        messagingTemplate.convertAndSend("/topic/localizacao", (Object) payload);
     }
 }
