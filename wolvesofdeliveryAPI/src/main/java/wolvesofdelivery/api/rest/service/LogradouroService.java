@@ -6,6 +6,9 @@ import wolvesofdelivery.api.rest.model.Logradouro;
 import wolvesofdelivery.api.rest.repository.LogradouroRepository;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 @Service
 public class LogradouroService {
 
@@ -38,5 +41,13 @@ public class LogradouroService {
 
     public void deletar(Long id) {
         logradouroRepository.deleteById(id);
+    }
+    
+    public Page<Logradouro> listarPaginado(int pagina) {
+        return logradouroRepository.findAll(PageRequest.of(pagina, 20));
+    }
+
+    public Page<Logradouro> buscarPaginado(String rua, int pagina) {
+        return logradouroRepository.findByRuaContainingIgnoreCase(rua, PageRequest.of(pagina, 20));
     }
 }
