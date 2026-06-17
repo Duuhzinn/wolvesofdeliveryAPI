@@ -26,6 +26,15 @@ public class LogradouroService {
         logradouro.setCidade(logradouro.getCidade().toUpperCase());
         return logradouroRepository.save(logradouro);
     }
+    
+    public List<Logradouro> salvarTodos(List<Logradouro> logradouros) {
+        logradouros.forEach(l -> {
+            l.setRua(l.getRua().toUpperCase());
+            l.setBairro(l.getBairro().toUpperCase());
+            l.setCidade(l.getCidade().toUpperCase());
+        });
+        return logradouroRepository.saveAll(logradouros);
+    }
 
     public void deletar(Long id) {
         logradouroRepository.deleteById(id);

@@ -39,6 +39,11 @@ public class LogradouroController {
     public ResponseEntity<Logradouro> salvar(@RequestBody Logradouro logradouro) {
         return new ResponseEntity<Logradouro>(logradouroService.salvar(logradouro), HttpStatus.OK);
     }
+    
+    @PostMapping(value = "/saveAll", produces = "application/json")
+    public ResponseEntity<List<Logradouro>> salvarTodos(@RequestBody List<Logradouro> logradouros) {
+        return new ResponseEntity<List<Logradouro>>(logradouroService.salvarTodos(logradouros), HttpStatus.OK);
+    }
 
     @DeleteMapping(value = "/delete/{id}", produces = "application/json")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
