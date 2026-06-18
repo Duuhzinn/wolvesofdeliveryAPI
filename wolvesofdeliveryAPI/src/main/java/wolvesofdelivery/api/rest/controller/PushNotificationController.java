@@ -188,4 +188,23 @@ public class PushNotificationController {
 		return ResponseEntity.ok("Corrida aceita pelo motorista " + corrida.getMotorista().getId());
 
 	}
+	
+	@CacheEvict(value = "cacheUser", allEntries = true)
+	@CachePut("cacheUser")
+	@PatchMapping(value = "/acceptMultiple", produces = "application/json")
+	public ResponseEntity<?> corridasAceitas(@RequestBody List<Long> corridaIds) {
+	    for (Long corridaId : corridaIds) {
+	        Corridas corrida = corridasRepository.findById(corridaId)
+	                .orElseThrow(() -> new RuntimeException("Corrida não encontrada: " + corridaId));
+	        corrida.setData_aceite(new Timestamp(System.currentTimeMillis()));
+	        corrida.setStatus_corrida("EM ANDAMENTO");
+	        corridasRepository.save(corrida);
+	    }
+
+	    Long motoristaId = corridasRepository.findById(corridaIds.get(0))
+	            .orElseThrow().getMotorista().getId();
+
+	    messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
+	    return ResponseEntity.ok("Corridas aceitas: " + corridaIds);
+	}
 }
