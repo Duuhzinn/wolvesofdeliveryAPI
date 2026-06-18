@@ -21,6 +21,11 @@ public class LogradouroController {
     public ResponseEntity<Page<Logradouro>> listar(@PathVariable int pagina) {
         return new ResponseEntity<>(logradouroService.listarPaginado(pagina), HttpStatus.OK);
     }
+    
+    @GetMapping(value = "/listAll", produces = "application/json")
+    public ResponseEntity<List<Logradouro>> listarTodos() {
+        return new ResponseEntity<>(logradouroService.listar(), HttpStatus.OK);
+    }
 
     @GetMapping(value = "/search/{rua}/{pagina}", produces = "application/json")
     public ResponseEntity<Page<Logradouro>> buscar(@PathVariable String rua, @PathVariable int pagina) {
