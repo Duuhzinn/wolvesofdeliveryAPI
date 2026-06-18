@@ -135,7 +135,7 @@ public class PushNotificationController {
 	    String resposta = firebaseNotificationService.enviarNotificacaoMultipla(
 	            firebasetoken.getToken(),
 	            "Nova Corrida 🏍️",
-	            enderecos.size() + " entrega(s) disponível!",
+	            "Você tem uma nova corrida disponível!",
 	            corridaIds,
 	            despachanteId);
 
