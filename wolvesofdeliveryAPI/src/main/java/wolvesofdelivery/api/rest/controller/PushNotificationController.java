@@ -31,9 +31,7 @@ import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 import wolvesofdelivery.api.rest.service.FirebaseNotificationService;
 
-//LIBERANDO O ACESSO PARA QUALQUER SISTEMA
 @CrossOrigin(origins = "*")
-
 @RestController
 @RequestMapping(value = "/v1/pushnotification")
 public class PushNotificationController {
@@ -64,13 +62,11 @@ public class PushNotificationController {
 				return ResponseEntity.badRequest().body("Usuário sem token Firebase");
 			}
 
-			// CRIA A CORRIDA COM STATUS AGUARDANDO
 			Usuario motorista = optional.get();
 			Usuario despachante = usuarioRepository.findById(despachanteId)
 					.orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
 			String endereco = body.get("endereco");
-			
-			//BUSCA O VALOR DA CORRIDA DO DESPACHANTE
+
 			ConfiguracaoCorrida configuracaoCorrida = configuracaoCorridaRepository.findByUsuarioId(despachanteId);
 			BigDecimal valorCorrida = (configuracaoCorrida != null && configuracaoCorrida.getValor() != null)
 					? configuracaoCorrida.getValor() : BigDecimal.ZERO;
@@ -94,7 +90,7 @@ public class PushNotificationController {
 			return ResponseEntity.badRequest().body("Usuário não encontrado");
 		}
 	}
-	
+
 	@PostMapping(value = "/sendMultiple/{usuarioId}/{despachanteId}", produces = "application/json")
 	public ResponseEntity<?> enviarNotificacaoMultipla(@PathVariable Long usuarioId,
 	        @PathVariable Long despachanteId,
@@ -135,13 +131,17 @@ public class PushNotificationController {
 	        corridaIds.add(salva.getId());
 	    }
 
-	    String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
-	            "Nova Corrida 🏍️", enderecos.size() + " entrega(s) disponível!", corridaIds.get(0), despachanteId);
+	    // USA O NOVO MÉTODO QUE ENVIA TODOS OS IDS NA NOTIFICAÇÃO
+	    String resposta = firebaseNotificationService.enviarNotificacaoMultipla(
+	            firebasetoken.getToken(),
+	            "Nova Corrida 🏍️",
+	            enderecos.size() + " entrega(s) disponível!",
+	            corridaIds,
+	            despachanteId);
 
 	    messagingTemplate.convertAndSend("/topic/fila", usuarioId);
 	    return ResponseEntity.ok(Map.of("corridaIds", corridaIds, "resposta", resposta));
 	}
-	
 
 	@CacheEvict(value = "cacheUser", allEntries = true)
 	@CachePut("cacheUser")
@@ -153,19 +153,17 @@ public class PushNotificationController {
 			if (firebasetoken == null) {
 				return ResponseEntity.badRequest().body("Usuário sem tokem FireBase");
 			}
-			
-			// REGISTRA A CORRIDA EXPIRADA
+
 			Corridas corrida = corridasRepository.findById(corridaId)
-	                .orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
+                .orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
 			CorridaExpirada expirada = new CorridaExpirada();
 			expirada.setMotorista(optional.get());
 			expirada.setCorrida(corrida);
 			expirada.setDataExpirada(new Timestamp(System.currentTimeMillis()));
 			corridaExpiradaRepository.save(expirada);
-			
+
 			String resposta = firebaseNotificationService.enviarNotificacaoPerdida(firebasetoken.getToken(),
 					"Corrida Perdida ❌", "Você perdeu uma corrida", corridaId);
-			// NOTIFICA VIA WEBSOCKET
 			messagingTemplate.convertAndSend("/topic/fila", usuarioId);
 			return ResponseEntity.ok(resposta);
 		} else {
@@ -186,9 +184,8 @@ public class PushNotificationController {
 
 		messagingTemplate.convertAndSend("/topic/corrida", corrida.getMotorista().getId());
 		return ResponseEntity.ok("Corrida aceita pelo motorista " + corrida.getMotorista().getId());
-
 	}
-	
+
 	@CacheEvict(value = "cacheUser", allEntries = true)
 	@CachePut("cacheUser")
 	@PatchMapping(value = "/acceptMultiple", produces = "application/json")

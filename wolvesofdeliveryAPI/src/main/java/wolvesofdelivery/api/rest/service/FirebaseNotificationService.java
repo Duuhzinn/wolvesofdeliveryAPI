@@ -8,6 +8,8 @@ import com.google.firebase.messaging.Aps;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Notification;
 import com.google.firebase.messaging.Message;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FirebaseNotificationService {
@@ -23,6 +25,46 @@ public class FirebaseNotificationService {
 					.putData("title", titulo)
 					.putData("body", mensagem)
 					.putData("corridaId", corridaId.toString())
+					.putData("despachanteId", cliente_id.toString())
+					.setAndroidConfig(AndroidConfig.builder()
+							.setPriority(Priority.HIGH)
+							.setNotification(AndroidNotification.builder()
+									.setChannelId("corrida_channel")
+									.setSound("default")
+									.setIcon("ic_notification")
+									.setTag("corrida_ativa")
+									.build())
+							.build())
+					.setApnsConfig(ApnsConfig.builder()
+							.setAps(Aps.builder()
+									.setContentAvailable(true)
+									.build())
+							.putHeader("apns-priority", "10")
+							.build())
+					.build();
+			String response = FirebaseMessaging.getInstance().send(message);
+			System.out.println("Firebase OK: " + response);
+			System.out.println("Token: " + token);
+			return "Notificação Enviada";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "Erro ao enviar notificação";
+		}
+	}
+
+	public String enviarNotificacaoMultipla(String token, String titulo, String mensagem, List<Long> corridaIds, Long cliente_id) {
+		try {
+			String corridaIdsStr = corridaIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+			Message message = Message.builder()
+					.setToken(token)
+					.setNotification(Notification.builder()
+							.setTitle(titulo)
+							.setBody(mensagem)
+							.build())
+					.putData("title", titulo)
+					.putData("body", mensagem)
+					.putData("corridaId", corridaIds.get(0).toString())
+					.putData("corridaIds", corridaIdsStr)
 					.putData("despachanteId", cliente_id.toString())
 					.setAndroidConfig(AndroidConfig.builder()
 							.setPriority(Priority.HIGH)
