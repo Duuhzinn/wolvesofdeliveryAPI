@@ -2,6 +2,7 @@ package wolvesofdelivery.api.rest.controller;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -93,6 +94,54 @@ public class PushNotificationController {
 			return ResponseEntity.badRequest().body("Usuário não encontrado");
 		}
 	}
+	
+	@PostMapping(value = "/sendMultiple/{usuarioId}/{despachanteId}", produces = "application/json")
+	public ResponseEntity<?> enviarNotificacaoMultipla(@PathVariable Long usuarioId,
+	        @PathVariable Long despachanteId,
+	        @RequestBody Map<String, Object> body) {
+
+	    Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
+	    if (!optional.isPresent()) {
+	        return ResponseEntity.badRequest().body("Usuário não encontrado");
+	    }
+
+	    Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
+	    if (firebasetoken == null) {
+	        return ResponseEntity.badRequest().body("Usuário sem token Firebase");
+	    }
+
+	    Usuario motorista = optional.get();
+	    Usuario despachante = usuarioRepository.findById(despachanteId)
+	            .orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
+
+	    ConfiguracaoCorrida configuracaoCorrida = configuracaoCorridaRepository.findByUsuarioId(despachanteId);
+	    BigDecimal valorCorrida = (configuracaoCorrida != null && configuracaoCorrida.getValor() != null)
+	            ? configuracaoCorrida.getValor() : BigDecimal.ZERO;
+
+	    @SuppressWarnings("unchecked")
+	    List<String> enderecos = (List<String>) body.get("enderecos");
+
+	    List<Long> corridaIds = new java.util.ArrayList<>();
+	    for (String endereco : enderecos) {
+	        Corridas corrida = new Corridas();
+	        corrida.setMotorista(motorista);
+	        corrida.setCliente(despachante);
+	        corrida.setUsuario(despachante);
+	        corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
+	        corrida.setStatus_corrida("AGUARDANDO");
+	        corrida.setEndereco_entrega(endereco);
+	        corrida.setValor_corrida(valorCorrida);
+	        Corridas salva = corridasRepository.save(corrida);
+	        corridaIds.add(salva.getId());
+	    }
+
+	    String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
+	            "Nova Corrida 🏍️", enderecos.size() + " entrega(s) disponível!", corridaIds.get(0), despachanteId);
+
+	    messagingTemplate.convertAndSend("/topic/fila", usuarioId);
+	    return ResponseEntity.ok(Map.of("corridaIds", corridaIds, "resposta", resposta));
+	}
+	
 
 	@CacheEvict(value = "cacheUser", allEntries = true)
 	@CachePut("cacheUser")
