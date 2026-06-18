@@ -155,6 +155,29 @@ public class CorridaController {
 
 		return ResponseEntity.ok("Chamada cancelada!");
 	}
+	
+	// CANCELA MÚLTIPLAS CORRIDAS E LIBERA O MOTORISTA
+	@CacheEvict(value = "cacheUser", allEntries = true)
+	@CachePut("cacheUser")
+	@PatchMapping(value = "/cancelMultiple/{motoristaId}", produces = "application/json")
+	public ResponseEntity<?> cancelarMultiplas(@PathVariable Long motoristaId, @RequestBody List<Long> corridaIds) {
+	    for (Long corridaId : corridaIds) {
+	        Corridas corrida = corridasRepository.findById(corridaId)
+	                .orElseThrow(() -> new RuntimeException("Corrida não encontrada: " + corridaId));
+	        corrida.setStatus_corrida("EXPIRADA");
+	        corrida.setTermino_corrida(new Timestamp(System.currentTimeMillis()));
+	        corridasRepository.save(corrida);
+	    }
+
+	    Usuario motorista = usuarioRepository.findById(motoristaId)
+	            .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+	    motorista.setStatus(1L);
+	    usuarioRepository.save(motorista);
+	    messagingTemplate.convertAndSend("/topic/cancelarChamada", motoristaId);
+	    webSocketService.notificarAtualizacaoFila();
+
+	    return ResponseEntity.ok("Chamada cancelada!");
+	}
 
 	// CORRIDA EXPIRADA
 	@CacheEvict(value = "cacheUser", allEntries = true)
@@ -167,6 +190,21 @@ public class CorridaController {
 		corrida.setTermino_corrida(new Timestamp(System.currentTimeMillis()));
 		corridasRepository.save(corrida);
 		return ResponseEntity.ok("Corrida cancelada!");
+	}
+	
+	// EXPIRA MÚLTIPLAS CORRIDAS
+	@CacheEvict(value = "cacheUser", allEntries = true)
+	@CachePut("cacheUser")
+	@PatchMapping(value = "/expireMultiple", produces = "application/json")
+	public ResponseEntity<?> expirarMultiplas(@RequestBody List<Long> corridaIds) {
+	    for (Long corridaId : corridaIds) {
+	        Corridas corrida = corridasRepository.findById(corridaId)
+	                .orElseThrow(() -> new RuntimeException("Corrida não encontrada: " + corridaId));
+	        corrida.setStatus_corrida("EXPIRADA");
+	        corrida.setTermino_corrida(new Timestamp(System.currentTimeMillis()));
+	        corridasRepository.save(corrida);
+	    }
+	    return ResponseEntity.ok("Corridas expiradas: " + corridaIds);
 	}
 
 	// _________COMEÇA O ENDPOINT DE CIENCIA DE DADOS_________

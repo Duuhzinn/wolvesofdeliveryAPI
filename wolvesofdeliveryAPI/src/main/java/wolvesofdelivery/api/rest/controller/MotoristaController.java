@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -196,5 +197,64 @@ public class MotoristaController {
 	    }
 	}
 	
-	
+	// MOTORISTA RECUSOU MÚLTIPLAS CORRIDAS
+	@CacheEvict(value = "cacheUser", allEntries = true)
+	@PatchMapping(value = "/recusarMultiplas/{motoristaId}/{despachanteId}", produces = "application/json")
+	public ResponseEntity<?> recusarMultiplas(
+	        @PathVariable Long motoristaId,
+	        @PathVariable Long despachanteId,
+	        @RequestBody List<Long> corridaIds) {
+
+	    // 1 - JOGA O MOTORISTA QUE RECUSOU PARA O FIM DA FILA
+	    Usuario motorista = usuarioRepository.findById(motoristaId)
+	            .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+	    motorista.setStatus(1L);
+	    motorista.setPosicaofila(new Timestamp(System.currentTimeMillis()));
+	    usuarioRepository.save(motorista);
+	    webSocketService.notificarAtualizacaoFila();
+	    webSocketService.notificarRecusaMotorista();
+
+	    // 2 - REGISTRA A RECUSA DE CADA CORRIDA
+	    for (Long corridaId : corridaIds) {
+	        Corridas corrida = corridasRepository.findById(corridaId)
+	                .orElseThrow(() -> new RuntimeException("Corrida não encontrada: " + corridaId));
+	        CorridaRecusada corridaRecusada = new CorridaRecusada();
+	        corridaRecusada.setMotorista(motorista);
+	        corridaRecusada.setCorrida(corrida);
+	        corridaRecusada.setDataRecusa(new Timestamp(System.currentTimeMillis()));
+	        corridasRecusadaRepository.save(corridaRecusada);
+	    }
+
+	    // 3 - BUSCA O PRÓXIMO MOTORISTA DA FILA
+	    Usuario proximoMotorista = usuarioRepository
+	            .findTop1ByTipoUserAndStatusAndIdNotOrderByPosicaofilaAsc("MOTORISTA", 1L, motoristaId);
+
+	    if (proximoMotorista != null) {
+	        // 4 - ATUALIZA TODAS AS CORRIDAS COM O NOVO MOTORISTA
+	        for (Long corridaId : corridaIds) {
+	            Corridas corrida = corridasRepository.findById(corridaId).orElseThrow();
+	            corrida.setMotorista(proximoMotorista);
+	            corridasRepository.save(corrida);
+	        }
+
+	        // 5 - MARCA O PRÓXIMO COMO CHAMANDO
+	        proximoMotorista.setStatus(3L);
+	        usuarioRepository.save(proximoMotorista);
+
+	        // 6 - ENVIA NOTIFICAÇÃO PARA O PRÓXIMO MOTORISTA
+	        Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(proximoMotorista.getId());
+	        if (firebasetoken != null) {
+	            firebaseNotificationService.enviarNotificacao(
+	                    firebasetoken.getToken(),
+	                    "Nova Corrida 🏍️",
+	                    corridaIds.size() + " entrega(s) disponível!",
+	                    corridaIds.get(0),
+	                    despachanteId);
+	        }
+
+	        return ResponseEntity.ok(Map.of("proximoMotoristaId", proximoMotorista.getId()));
+	    } else {
+	        return ResponseEntity.ok(Map.of("proximoMotoristaId", (Object) null));
+	    }
+	}
 }
