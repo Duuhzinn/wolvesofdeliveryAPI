@@ -68,7 +68,8 @@ public class PushNotificationController {
 
 		// VERIFICA SE O MOTORISTA JÁ ESTÁ COM CORRIDA AGUARDANDO
 		boolean temCorridaAguardando = corridasRepository
-				.existsByMotoristaIdAndStatus_corrida(usuarioId, "AGUARDANDO");
+				.existsByMotoristaIdAndStatusCorrida(usuarioId, "AGUARDANDO");
+		
 		if (temCorridaAguardando) {
 			return ResponseEntity.badRequest().body("Motorista já possui corrida aguardando");
 		}
@@ -116,7 +117,7 @@ public class PushNotificationController {
 
 	    // VERIFICA SE O MOTORISTA JÁ ESTÁ COM CORRIDA AGUARDANDO
 	    boolean temCorridaAguardando = corridasRepository
-	            .existsByMotoristaIdAndStatus_corrida(usuarioId, "AGUARDANDO");
+	    		.existsByMotoristaIdAndStatusCorrida(usuarioId, "AGUARDANDO");
 	    if (temCorridaAguardando) {
 	        return ResponseEntity.badRequest().body("Motorista já possui corrida aguardando");
 	    }
