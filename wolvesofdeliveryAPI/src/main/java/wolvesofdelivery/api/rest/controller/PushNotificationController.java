@@ -55,40 +55,48 @@ public class PushNotificationController {
 	public ResponseEntity<?> enviarNotificacaoSemCorrida(@PathVariable Long usuarioId,
 			@PathVariable Long despachanteId,
 			@RequestBody Map<String, String> body) {
+
 		Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
-		if (optional.isPresent()) {
-			Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
-			if (firebasetoken == null) {
-				return ResponseEntity.badRequest().body("Usuário sem token Firebase");
-			}
-
-			Usuario motorista = optional.get();
-			Usuario despachante = usuarioRepository.findById(despachanteId)
-					.orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
-			String endereco = body.get("endereco");
-
-			ConfiguracaoCorrida configuracaoCorrida = configuracaoCorridaRepository.findByUsuarioId(despachanteId);
-			BigDecimal valorCorrida = (configuracaoCorrida != null && configuracaoCorrida.getValor() != null)
-					? configuracaoCorrida.getValor() : BigDecimal.ZERO;
-
-			Corridas corrida = new Corridas();
-			corrida.setMotorista(motorista);
-			corrida.setCliente(despachante);
-			corrida.setUsuario(despachante);
-			corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
-			corrida.setStatus_corrida("AGUARDANDO");
-			corrida.setEndereco_entrega(endereco);
-			corrida.setValor_corrida(valorCorrida);
-			Corridas corridaSalva = corridasRepository.save(corrida);
-
-			String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
-					"Nova Corrida 🏍️", "Você tem uma nova corrida disponível!", corridaSalva.getId(), despachanteId);
-
-			messagingTemplate.convertAndSend("/topic/fila", usuarioId);
-			return ResponseEntity.ok(Map.of("corridaId", corridaSalva.getId(), "resposta", resposta));
-		} else {
+		if (!optional.isPresent()) {
 			return ResponseEntity.badRequest().body("Usuário não encontrado");
 		}
+
+		Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
+		if (firebasetoken == null) {
+			return ResponseEntity.badRequest().body("Usuário sem token Firebase");
+		}
+
+		// VERIFICA SE O MOTORISTA JÁ ESTÁ COM CORRIDA AGUARDANDO
+		boolean temCorridaAguardando = corridasRepository
+				.existsByMotoristaIdAndStatus_corrida(usuarioId, "AGUARDANDO");
+		if (temCorridaAguardando) {
+			return ResponseEntity.badRequest().body("Motorista já possui corrida aguardando");
+		}
+
+		Usuario motorista = optional.get();
+		Usuario despachante = usuarioRepository.findById(despachanteId)
+				.orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
+		String endereco = body.get("endereco");
+
+		ConfiguracaoCorrida configuracaoCorrida = configuracaoCorridaRepository.findByUsuarioId(despachanteId);
+		BigDecimal valorCorrida = (configuracaoCorrida != null && configuracaoCorrida.getValor() != null)
+				? configuracaoCorrida.getValor() : BigDecimal.ZERO;
+
+		Corridas corrida = new Corridas();
+		corrida.setMotorista(motorista);
+		corrida.setCliente(despachante);
+		corrida.setUsuario(despachante);
+		corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
+		corrida.setStatus_corrida("AGUARDANDO");
+		corrida.setEndereco_entrega(endereco);
+		corrida.setValor_corrida(valorCorrida);
+		Corridas corridaSalva = corridasRepository.save(corrida);
+
+		String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
+				"Nova Corrida 🏍️", "Você tem uma nova corrida disponível!", corridaSalva.getId(), despachanteId);
+
+		messagingTemplate.convertAndSend("/topic/fila", usuarioId);
+		return ResponseEntity.ok(Map.of("corridaId", corridaSalva.getId(), "resposta", resposta));
 	}
 
 	@PostMapping(value = "/sendMultiple/{usuarioId}/{despachanteId}", produces = "application/json")
@@ -104,6 +112,13 @@ public class PushNotificationController {
 	    Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
 	    if (firebasetoken == null) {
 	        return ResponseEntity.badRequest().body("Usuário sem token Firebase");
+	    }
+
+	    // VERIFICA SE O MOTORISTA JÁ ESTÁ COM CORRIDA AGUARDANDO
+	    boolean temCorridaAguardando = corridasRepository
+	            .existsByMotoristaIdAndStatus_corrida(usuarioId, "AGUARDANDO");
+	    if (temCorridaAguardando) {
+	        return ResponseEntity.badRequest().body("Motorista já possui corrida aguardando");
 	    }
 
 	    Usuario motorista = optional.get();
@@ -131,7 +146,6 @@ public class PushNotificationController {
 	        corridaIds.add(salva.getId());
 	    }
 
-	    // USA O NOVO MÉTODO QUE ENVIA TODOS OS IDS NA NOTIFICAÇÃO
 	    String resposta = firebaseNotificationService.enviarNotificacaoMultipla(
 	            firebasetoken.getToken(),
 	            "Nova Corrida 🏍️",

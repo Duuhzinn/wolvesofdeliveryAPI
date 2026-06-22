@@ -25,6 +25,8 @@ public interface CorridasRepository extends JpaRepository<Corridas, Long> {
 
 	@Query("SELECT c FROM Corridas c WHERE c.cliente.id = :clienteId AND c.status_corrida = :status ORDER BY c.id DESC")
 	Page<Corridas> findByClienteIdAndStatusOrderByIdDesc(@Param("clienteId") Long clienteId, @Param("status") String status, Pageable pageable);
+	
+	boolean existsByMotoristaIdAndStatus_corrida(Long motoristaId, String statusCorrida);
 
 	//________________ESTATISTICAS_______________
 
