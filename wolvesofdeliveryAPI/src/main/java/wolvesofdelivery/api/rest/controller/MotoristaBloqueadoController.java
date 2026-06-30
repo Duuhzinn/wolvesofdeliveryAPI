@@ -35,9 +35,9 @@ public class MotoristaBloqueadoController {
 	@CacheEvict(value = "cacheUser", allEntries = true)
 	@CachePut("cacheUser")
     @DeleteMapping("/delete/{restauranteId}/{motoristaId}")
-    public ResponseEntity<Void> desbloquear(@PathVariable Long restauranteId,
-                                             @PathVariable Long motoristaId) {
+    public ResponseEntity<String> desbloquear(@PathVariable Long restauranteId,
+                                               @PathVariable Long motoristaId) {
         motoristaBloqueadoService.desbloquear(restauranteId, motoristaId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Motorista desbloqueado com sucesso!");
     }
 }
