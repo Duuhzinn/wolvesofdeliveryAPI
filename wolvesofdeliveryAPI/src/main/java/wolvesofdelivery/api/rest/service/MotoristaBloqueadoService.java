@@ -13,8 +13,6 @@ public class MotoristaBloqueadoService {
 
 	@Autowired
     private MotoristaBloqueadoRepository motoristaBloqueadoRepository;
-	@Autowired
-	private MotoristaBloqueado motoristaBloqueado;
 	
 	public List<MotoristaBloqueado> listarPorRestaurante(Long restauranteId) {
         return motoristaBloqueadoRepository.findByRestauranteId(restauranteId);
