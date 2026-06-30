@@ -26,7 +26,7 @@ public class MotoristaBloqueadoController {
 
 	@CacheEvict(value = "cacheUser", allEntries = true)
 	@CachePut("cacheUser")
-    @PostMapping("/{restauranteId}/{motoristaId}")
+    @PostMapping("/save/{restauranteId}/{motoristaId}")
     public ResponseEntity<MotoristaBloqueado> bloquear(@PathVariable Long restauranteId,
                                                          @PathVariable Long motoristaId) {
         return ResponseEntity.ok(motoristaBloqueadoService.bloquear(restauranteId, motoristaId));
@@ -34,7 +34,7 @@ public class MotoristaBloqueadoController {
 
 	@CacheEvict(value = "cacheUser", allEntries = true)
 	@CachePut("cacheUser")
-    @DeleteMapping("/{restauranteId}/{motoristaId}")
+    @DeleteMapping("/delete/{restauranteId}/{motoristaId}")
     public ResponseEntity<Void> desbloquear(@PathVariable Long restauranteId,
                                              @PathVariable Long motoristaId) {
         motoristaBloqueadoService.desbloquear(restauranteId, motoristaId);
