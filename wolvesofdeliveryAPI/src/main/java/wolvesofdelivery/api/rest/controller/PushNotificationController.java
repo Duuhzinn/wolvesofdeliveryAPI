@@ -30,6 +30,7 @@ import wolvesofdelivery.api.rest.repository.CorridasRepository;
 import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 import wolvesofdelivery.api.rest.service.FirebaseNotificationService;
+import wolvesofdelivery.api.rest.service.MotoristaBloqueadoService;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -50,6 +51,8 @@ public class PushNotificationController {
 	private SimpMessagingTemplate messagingTemplate;
 	@Autowired
 	private ConfiguracaoCorridaRepository configuracaoCorridaRepository;
+	@Autowired
+	private MotoristaBloqueadoService motoristaBloqueadoService;
 
 	@PostMapping(value = "/send/{usuarioId}/{despachanteId}", produces = "application/json")
 	public ResponseEntity<?> enviarNotificacaoSemCorrida(@PathVariable Long usuarioId,
@@ -59,6 +62,11 @@ public class PushNotificationController {
 		Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
 		if (!optional.isPresent()) {
 			return ResponseEntity.badRequest().body("Usuário não encontrado");
+		}
+		
+		// VERIFICA SE O MOTORISTA ESTÁ BLOQUEADO POR ESSE ESTABELECIMENTO
+		if (motoristaBloqueadoService.isMotoristaBloqueado(despachanteId, usuarioId)) {
+			return ResponseEntity.badRequest().body("Motorista bloqueado para este estabelecimento");
 		}
 
 		Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
@@ -109,8 +117,13 @@ public class PushNotificationController {
 	    if (!optional.isPresent()) {
 	        return ResponseEntity.badRequest().body("Usuário não encontrado");
 	    }
+	    
+		// VERIFICA SE O MOTORISTA ESTÁ BLOQUEADO POR ESSE ESTABELECIMENTO
+		if (motoristaBloqueadoService.isMotoristaBloqueado(despachanteId, usuarioId)) {
+			return ResponseEntity.badRequest().body("Motorista bloqueado para este estabelecimento");
+		}
 
-	    Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
+		Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
 	    if (firebasetoken == null) {
 	        return ResponseEntity.badRequest().body("Usuário sem token Firebase");
 	    }
