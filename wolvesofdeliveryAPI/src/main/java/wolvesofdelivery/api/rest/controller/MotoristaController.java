@@ -28,6 +28,7 @@ import wolvesofdelivery.api.rest.repository.CorridasRepository;
 import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 import wolvesofdelivery.api.rest.service.FirebaseNotificationService;
+import wolvesofdelivery.api.rest.service.MotoristaBloqueadoService;
 import wolvesofdelivery.api.rest.service.WebSocketService;
 
 //LIBERANDO O ACESSO PARA QUALQUER SISTEMA
@@ -36,7 +37,7 @@ import wolvesofdelivery.api.rest.service.WebSocketService;
 @RestController
 @RequestMapping(value = "/v1/drive")
 public class MotoristaController {
-	
+
 	@Autowired
 	private CorridasRecusadaRepository corridasRecusadaRepository;
 	@Autowired
@@ -50,20 +51,24 @@ public class MotoristaController {
 	@Autowired
 	private CorridasRepository corridasRepository;
 	@Autowired
-	private WebSocketService webSocketService; 
-	
-	//____________CONSULTANDO USUÁRIO(MOTORISTA ONLINE e OFFLINE)_____________________//
-	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
-	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	private WebSocketService webSocketService;
+	@Autowired
+	private MotoristaBloqueadoService motoristaBloqueadoService;
+
+	// ____________CONSULTANDO USUÁRIO(MOTORISTA ONLINE e
+	// OFFLINE)_____________________//
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/allDrive", produces = "application/json")
-	public ResponseEntity<List<Usuario>> allDriver(){
+	public ResponseEntity<List<Usuario>> allDriver() {
 		List<Usuario> list = usuarioRepository.findByTipoUserOrderByNomeAsc("MOTORISTA");
 		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);
 	}
-	
-	//____________ALTERANDO STATUS DO USUÁRIO SELECIONADO____________________________//
-	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
-	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+
+	// ____________ALTERANDO STATUS DO USUÁRIO
+	// SELECIONADO____________________________//
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@PatchMapping(value = "/changeStatus/{id}", produces = "application/json")
 	public ResponseEntity<Usuario> alterarStatus(@PathVariable Long id) {
 		Usuario usuario = usuarioRepository.findById(id)
@@ -78,28 +83,29 @@ public class MotoristaController {
 		webSocketService.notificarAtualizacaoFila();
 		return new ResponseEntity<Usuario>(atualizarusuario, HttpStatus.OK);
 	}
-	
-	//_____________LISTANDO ORDEM DA FILA DOS MOTORISTAS_____________________//
-	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
-	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+
+	// _____________LISTANDO ORDEM DA FILA DOS MOTORISTAS_____________________//
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/driverQueue", produces = "application/json")
-	public ResponseEntity<List<Usuario>> driverQueue(){
+	public ResponseEntity<List<Usuario>> driverQueue() {
 		List<Usuario> list = usuarioRepository.findByTipoUserAndStatusOrderByPosicaofilaAsc("MOTORISTA", 1L);
 		return new ResponseEntity<List<Usuario>>(list, HttpStatus.OK);
 	}
-	
-	//_____________BUSCANDO O PRIMEIRO DA FILA DOS MOTORISTAS ONLINE_____________________//
-	@CacheEvict(value = "cacheUser", allEntries = true) //SE TIVER CACHE QUE NAO É USADO VAI REMOVER
-	@CachePut("cacheUser") //TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+
+	// _____________BUSCANDO O PRIMEIRO DA FILA DOS MOTORISTAS
+	// ONLINE_____________________//
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/driverQueue/firstid", produces = "application/json")
-	public ResponseEntity<Long> getNextDriverId(){
+	public ResponseEntity<Long> getNextDriverId() {
 		Usuario usuario = usuarioRepository.findTop1ByTipoUserAndStatusOrderByPosicaofilaAsc("MOTORISTA", 1L);
-		if(usuario == null) {
+		if (usuario == null) {
 			return ResponseEntity.noContent().build();
 		}
-		return ResponseEntity.ok(usuario.getId());	
+		return ResponseEntity.ok(usuario.getId());
 	}
-	
+
 	// ____________ALTERANDO STATUS DO MOTORISTA PARA OCUPADO___________________//
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
@@ -114,20 +120,20 @@ public class MotoristaController {
 		webSocketService.notificarAtualizacaoFila();
 		return new ResponseEntity<Usuario>(atualizarusuario, HttpStatus.OK);
 	}
-	
-	//ALTERANDO O STATUS PARA CHAMANDO O MOTORISTA
+
+	// ALTERANDO O STATUS PARA CHAMANDO O MOTORISTA
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@PatchMapping(value = "/callingDrive/{id}", produces = "application/json")
-	public ResponseEntity<?> chamandoMotorista(@PathVariable Long id){
+	public ResponseEntity<?> chamandoMotorista(@PathVariable Long id) {
 		Usuario usuario = usuarioRepository.findById(id)
-		        .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
 		usuario.setStatus(3L);
 		usuarioRepository.save(usuario);
 		return ResponseEntity.ok().build();
 	}
-	
-	//ALTERA O STATUS DO MOTORISTA PARA OFFLINE
+
+	// ALTERA O STATUS DO MOTORISTA PARA OFFLINE
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@PatchMapping(value = "/signOffline/{id}", produces = "application/json")
@@ -135,126 +141,138 @@ public class MotoristaController {
 		Usuario usuario = usuarioRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
 		usuario.setStatus(0L);
-	    usuarioRepository.save(usuario);
-	    webSocketService.notificarAtualizacaoFila();
-	    return ResponseEntity.ok().build();
+		usuarioRepository.save(usuario);
+		webSocketService.notificarAtualizacaoFila();
+		return ResponseEntity.ok().build();
 	}
-	
+
 	// MOTORISTA RECUSOU A CORRIDA - VOLTA PARA O FIM DA FILA
 	@CacheEvict(value = "cacheUser", allEntries = true)
 	@PatchMapping(value = "/recusarCorrida/{motoristaId}/{corridaId}/{despachanteId}", produces = "application/json")
-	public ResponseEntity<?> recusarCorrida(
-	        @PathVariable Long motoristaId,
-	        @PathVariable Long corridaId,
-	        @PathVariable Long despachanteId) {
+	public ResponseEntity<?> recusarCorrida(@PathVariable Long motoristaId, @PathVariable Long corridaId,
+			@PathVariable Long despachanteId) {
 
-	    // 1 - JOGA O MOTORISTA QUE RECUSOU PARA O FIM DA FILA
-	    Usuario motorista = usuarioRepository.findById(motoristaId)
-	            .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
-	    motorista.setStatus(1L);
-	    motorista.setPosicaofila(new Timestamp(System.currentTimeMillis()));
-	    usuarioRepository.save(motorista);
-	    webSocketService.notificarAtualizacaoFila();
-	    webSocketService.notificarRecusaMotorista();
-	    
-	    // REGISTRA A RECUSA
-	    Corridas corrida = corridasRepository.findById(corridaId)
-	            .orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
-	    CorridaRecusada corridaRecusada = new CorridaRecusada();
-	    corridaRecusada.setMotorista(motorista);
-	    corridaRecusada.setCorrida(corrida);
-	    corridaRecusada.setDataRecusa(new Timestamp(System.currentTimeMillis()));
-	    corridasRecusadaRepository.save(corridaRecusada);
+		// 1 - JOGA O MOTORISTA QUE RECUSOU PARA O FIM DA FILA
+		Usuario motorista = usuarioRepository.findById(motoristaId)
+				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+		motorista.setStatus(1L);
+		motorista.setPosicaofila(new Timestamp(System.currentTimeMillis()));
+		usuarioRepository.save(motorista);
+		webSocketService.notificarAtualizacaoFila();
 
-	    // 2 - BUSCA O PROXIMO MOTORISTA DA FILA (EXCLUINDO O QUE RECUSOU)
-	    Usuario proximoMotorista = usuarioRepository
-	            .findTop1ByTipoUserAndStatusAndIdNotOrderByPosicaofilaAsc("MOTORISTA", 1L, motoristaId);
+		// REGISTRA A RECUSA
+		Corridas corrida = corridasRepository.findById(corridaId)
+				.orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
+		CorridaRecusada corridaRecusada = new CorridaRecusada();
+		corridaRecusada.setMotorista(motorista);
+		corridaRecusada.setCorrida(corrida);
+		corridaRecusada.setDataRecusa(new Timestamp(System.currentTimeMillis()));
+		corridasRecusadaRepository.save(corridaRecusada);
 
-	    if (proximoMotorista != null) {
-	        // 3 - ATUALIZA A CORRIDA COM O NOVO MOTORISTA
-	        corrida.setMotorista(proximoMotorista);
-	        corridasRepository.save(corrida);
+		// 2 - BUSCA O PROXIMO MOTORISTA DA FILA, PULANDO O QUE RECUSOU E OS BLOQUEADOS PARA ESSE ESTABELECIMENTO
+	    List<Usuario> filaOnline = usuarioRepository
+	            .findByTipoUserAndStatusOrderByPosicaofilaAsc("MOTORISTA", 1L);
 
-	        // 4 - MARCA O PROXIMO COMO CHAMANDO
-	        proximoMotorista.setStatus(3L);
-	        usuarioRepository.save(proximoMotorista);
-
-	        // 5 - ENVIA NOTIFICAÇÃO PARA O PROXIMO MOTORISTA
-	        Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(proximoMotorista.getId());
-	        if (firebasetoken != null) {
-	            firebaseNotificationService.enviarNotificacao(
-	                    firebasetoken.getToken(),
-	                    "Nova Corrida 🏍️",
-	                    "Você tem uma nova corrida disponível!",
-	                    0L,
-	                    despachanteId);
+	    Usuario proximoMotorista = null;
+	    for (Usuario usuario : filaOnline) {
+	        if (usuario.getId().equals(motoristaId)) {
+	            continue;
 	        }
-
-	        return ResponseEntity.ok(Map.of("proximoMotoristaId", proximoMotorista.getId()));
-
-	    } else {
-	        return ResponseEntity.ok(Map.of("proximoMotoristaId", (Object) null));
+	        if (motoristaBloqueadoService.isMotoristaBloqueado(despachanteId, usuario.getId())) {
+	            continue;
+	        }
+	        proximoMotorista = usuario;
+	        break;
 	    }
+	    webSocketService.notificarRecusaMotorista(proximoMotorista != null ? proximoMotorista.getId() : null);
+
+		if (proximoMotorista != null) {
+			// 3 - ATUALIZA A CORRIDA COM O NOVO MOTORISTA
+			corrida.setMotorista(proximoMotorista);
+			corridasRepository.save(corrida);
+
+			// 4 - MARCA O PROXIMO COMO CHAMANDO
+			proximoMotorista.setStatus(3L);
+			usuarioRepository.save(proximoMotorista);
+
+			// 5 - ENVIA NOTIFICAÇÃO PARA O PROXIMO MOTORISTA
+			Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(proximoMotorista.getId());
+			if (firebasetoken != null) {
+				firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(), "Nova Corrida 🏍️",
+						"Você tem uma nova corrida disponível!", 0L, despachanteId);
+			}
+
+			return ResponseEntity.ok(Map.of("proximoMotoristaId", proximoMotorista.getId()));
+
+		} else {
+			return ResponseEntity.ok(Map.of("proximoMotoristaId", (Object) null));
+		}
 	}
-	
+
 	// MOTORISTA RECUSOU MÚLTIPLAS CORRIDAS
 	@CacheEvict(value = "cacheUser", allEntries = true)
 	@PatchMapping(value = "/recusarMultiplas/{motoristaId}/{despachanteId}", produces = "application/json")
-	public ResponseEntity<?> recusarMultiplas(
-	        @PathVariable Long motoristaId,
-	        @PathVariable Long despachanteId,
-	        @RequestBody List<Long> corridaIds) {
+	public ResponseEntity<?> recusarMultiplas(@PathVariable Long motoristaId, @PathVariable Long despachanteId,
+			@RequestBody List<Long> corridaIds) {
 
-	    // 1 - JOGA O MOTORISTA QUE RECUSOU PARA O FIM DA FILA
-	    Usuario motorista = usuarioRepository.findById(motoristaId)
-	            .orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
-	    motorista.setStatus(1L);
-	    motorista.setPosicaofila(new Timestamp(System.currentTimeMillis()));
-	    usuarioRepository.save(motorista);
-	    webSocketService.notificarAtualizacaoFila();
-	    webSocketService.notificarRecusaMotorista();
+		// 1 - JOGA O MOTORISTA QUE RECUSOU PARA O FIM DA FILA
+		Usuario motorista = usuarioRepository.findById(motoristaId)
+				.orElseThrow(() -> new RuntimeException("Motorista não encontrado"));
+		motorista.setStatus(1L);
+		motorista.setPosicaofila(new Timestamp(System.currentTimeMillis()));
+		usuarioRepository.save(motorista);
+		webSocketService.notificarAtualizacaoFila();
 
-	    // 2 - REGISTRA A RECUSA DE CADA CORRIDA
-	    for (Long corridaId : corridaIds) {
-	        Corridas corrida = corridasRepository.findById(corridaId)
-	                .orElseThrow(() -> new RuntimeException("Corrida não encontrada: " + corridaId));
-	        CorridaRecusada corridaRecusada = new CorridaRecusada();
-	        corridaRecusada.setMotorista(motorista);
-	        corridaRecusada.setCorrida(corrida);
-	        corridaRecusada.setDataRecusa(new Timestamp(System.currentTimeMillis()));
-	        corridasRecusadaRepository.save(corridaRecusada);
-	    }
+		// 2 - REGISTRA A RECUSA DE CADA CORRIDA
+		for (Long corridaId : corridaIds) {
+			Corridas corrida = corridasRepository.findById(corridaId)
+					.orElseThrow(() -> new RuntimeException("Corrida não encontrada: " + corridaId));
+			CorridaRecusada corridaRecusada = new CorridaRecusada();
+			corridaRecusada.setMotorista(motorista);
+			corridaRecusada.setCorrida(corrida);
+			corridaRecusada.setDataRecusa(new Timestamp(System.currentTimeMillis()));
+			corridasRecusadaRepository.save(corridaRecusada);
+		}
 
-	    // 3 - BUSCA O PRÓXIMO MOTORISTA DA FILA
-	    Usuario proximoMotorista = usuarioRepository
-	            .findTop1ByTipoUserAndStatusAndIdNotOrderByPosicaofilaAsc("MOTORISTA", 1L, motoristaId);
+		// 3 - BUSCA O PRÓXIMO MOTORISTA DA FILA, PULANDO O QUE RECUSOU E OS BLOQUEADOS PARA ESSE ESTABELECIMENTO
+	    List<Usuario> filaOnline = usuarioRepository
+	            .findByTipoUserAndStatusOrderByPosicaofilaAsc("MOTORISTA", 1L);
 
-	    if (proximoMotorista != null) {
-	        // 4 - ATUALIZA TODAS AS CORRIDAS COM O NOVO MOTORISTA
-	        for (Long corridaId : corridaIds) {
-	            Corridas corrida = corridasRepository.findById(corridaId).orElseThrow();
-	            corrida.setMotorista(proximoMotorista);
-	            corridasRepository.save(corrida);
+	    Usuario proximoMotorista = null;
+	    for (Usuario usuario : filaOnline) {
+	        if (usuario.getId().equals(motoristaId)) {
+	            continue;
 	        }
-
-	        // 5 - MARCA O PRÓXIMO COMO CHAMANDO
-	        proximoMotorista.setStatus(3L);
-	        usuarioRepository.save(proximoMotorista);
-
-	        // 6 - ENVIA NOTIFICAÇÃO PARA O PRÓXIMO MOTORISTA
-	        Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(proximoMotorista.getId());
-	        if (firebasetoken != null) {
-	            firebaseNotificationService.enviarNotificacao(
-	                    firebasetoken.getToken(),
-	                    "Nova Corrida 🏍️",
-	                    corridaIds.size() + " entrega(s) disponível!",
-	                    corridaIds.get(0),
-	                    despachanteId);
+	        if (motoristaBloqueadoService.isMotoristaBloqueado(despachanteId, usuario.getId())) {
+	            continue;
 	        }
-
-	        return ResponseEntity.ok(Map.of("proximoMotoristaId", proximoMotorista.getId()));
-	    } else {
-	        return ResponseEntity.ok(Map.of("proximoMotoristaId", (Object) null));
+	        proximoMotorista = usuario;
+	        break;
 	    }
+	    webSocketService.notificarRecusaMotorista(proximoMotorista != null ? proximoMotorista.getId() : null);
+
+		if (proximoMotorista != null) {
+			// 4 - ATUALIZA TODAS AS CORRIDAS COM O NOVO MOTORISTA
+			for (Long corridaId : corridaIds) {
+				Corridas corrida = corridasRepository.findById(corridaId).orElseThrow();
+				corrida.setMotorista(proximoMotorista);
+				corridasRepository.save(corrida);
+			}
+
+			// 5 - MARCA O PRÓXIMO COMO CHAMANDO
+			proximoMotorista.setStatus(3L);
+			usuarioRepository.save(proximoMotorista);
+
+			// 6 - ENVIA NOTIFICAÇÃO PARA O PRÓXIMO MOTORISTA
+			Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(proximoMotorista.getId());
+			if (firebasetoken != null) {
+				firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(), "Nova Corrida 🏍️",
+						corridaIds.size() + " entrega(s) disponível!", corridaIds.get(0), despachanteId);
+			}
+
+			return ResponseEntity.ok(Map.of("proximoMotoristaId", proximoMotorista.getId()));
+		} else {
+			return ResponseEntity.ok(Map.of("proximoMotoristaId", (Object) null));
+		}
 	}
 }
