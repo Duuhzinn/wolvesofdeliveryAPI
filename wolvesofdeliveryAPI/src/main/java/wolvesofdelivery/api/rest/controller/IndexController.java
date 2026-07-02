@@ -30,7 +30,6 @@ import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.RoleRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
 
-
 //LIBERANDO O ACESSO PARA QUALQUER SISTEMA
 @CrossOrigin(origins = "*")
 
@@ -45,7 +44,8 @@ public class IndexController {
 	@Autowired
 	private ConfiguracaoCorridaRepository configuracaoCorridaRepository;
 
-	// ________________________CONSULTANDO USUÁRIO NOME_______________________________//
+	// ________________________CONSULTANDO USUÁRIO
+	// NOME_______________________________//
 
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NÃO É USADO, VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA?, VOU TRAZER E COLOCAR NO CACHE
@@ -109,15 +109,15 @@ public class IndexController {
 		usuario.setRoles(List.of(role));
 
 		Usuario usuarioSalvo = usuarioRepository.save(usuario);
-		
-		//CRIA CONFIG DA CORRIDA PARA CADA USUARIO CADASTRADO
+
+		// CRIA CONFIG DA CORRIDA PARA CADA USUARIO CADASTRADO
 		if (usuario.getTipoUser().equals("CLIENTE") || usuario.getTipoUser().equals("ADMIN")) {
-		    ConfiguracaoCorrida configuracaoCorrida = new ConfiguracaoCorrida();
-		    configuracaoCorrida.setUsuario(usuarioSalvo);
-		    configuracaoCorrida.setValor(null);
-		    configuracaoCorridaRepository.save(configuracaoCorrida);
+			ConfiguracaoCorrida configuracaoCorrida = new ConfiguracaoCorrida();
+			configuracaoCorrida.setUsuario(usuarioSalvo);
+			configuracaoCorrida.setValor(null);
+			configuracaoCorridaRepository.save(configuracaoCorrida);
 		}
-		
+
 		return new ResponseEntity<>(usuarioSalvo, HttpStatus.OK);
 	}
 
@@ -149,7 +149,8 @@ public class IndexController {
 
 	}
 
-	// ______________SALVANDO TOKEN FIREBASE NO BANCO DE DADOS DO USUARIO_____________//
+	// ______________SALVANDO TOKEN FIREBASE NO BANCO DE DADOS DO
+	// USUARIO_____________//
 
 	@Autowired
 	private FirebasetokenRepository firebasetokenRepository;
@@ -187,18 +188,29 @@ public class IndexController {
 		return new ResponseEntity<>(usuario, HttpStatus.OK);
 
 	}
-	
-	//SETANDO STATUS 1 - ONLINE E 2 OFFLINE
+
+	// SETANDO STATUS 1 - ONLINE E 2 OFFLINE
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO, VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VOU TRAZER E COLOCAR NO CACHE
 	@PatchMapping(value = "/status/{id}/{status}", produces = "application/json")
 	public ResponseEntity<?> atualizarStatus(@PathVariable Long id, @PathVariable Long status) {
-	    Usuario usuario = usuarioRepository.findById(id)
-	            .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-	    usuario.setStatus(status);
-	    usuarioRepository.save(usuario);
-	    return ResponseEntity.ok().build();
+		Usuario usuario = usuarioRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+		usuario.setStatus(status);
+		usuarioRepository.save(usuario);
+		return ResponseEntity.ok().build();
 	}
-	
+
+	// BUSCAO O ID DO USUARIO ONLINE
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/status/{id}", produces = "application/json")
+	public ResponseEntity<?> buscarUsuarioPorId(@PathVariable Long id) {
+		Optional<Usuario> optional = usuarioRepository.findById(id);
+		if (!optional.isPresent()) {
+			return ResponseEntity.badRequest().body("Usuário não encontrado");
+		}
+		return ResponseEntity.ok(optional.get());
+	}
 
 }
