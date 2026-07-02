@@ -56,56 +56,58 @@ public class PushNotificationController {
 
 	@PostMapping(value = "/send/{usuarioId}/{despachanteId}", produces = "application/json")
 	public ResponseEntity<?> enviarNotificacaoSemCorrida(@PathVariable Long usuarioId,
-			@PathVariable Long despachanteId,
-			@RequestBody Map<String, String> body) {
+	        @PathVariable Long despachanteId,
+	        @RequestBody Map<String, String> body) {
 
-		Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
-		if (!optional.isPresent()) {
-			return ResponseEntity.badRequest().body("Usuário não encontrado");
-		}
-		
-		// VERIFICA SE O MOTORISTA ESTÁ BLOQUEADO POR ESSE ESTABELECIMENTO
-		if (motoristaBloqueadoService.isMotoristaBloqueado(despachanteId, usuarioId)) {
-			return ResponseEntity.badRequest().body("Motorista bloqueado para este estabelecimento");
-		}
+	    Optional<Usuario> optional = usuarioRepository.findById(usuarioId);
+	    if (!optional.isPresent()) {
+	        return ResponseEntity.badRequest().body("Usuário não encontrado");
+	    }
 
-		Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
-		if (firebasetoken == null) {
-			return ResponseEntity.badRequest().body("Usuário sem token Firebase");
-		}
+	    // VERIFICA SE O MOTORISTA ESTÁ BLOQUEADO POR ESSE ESTABELECIMENTO
+	    if (motoristaBloqueadoService.isMotoristaBloqueado(despachanteId, usuarioId)) {
+	        return ResponseEntity.badRequest().body("Motorista bloqueado para este estabelecimento");
+	    }
 
-		// VERIFICA SE O MOTORISTA JÁ ESTÁ COM CORRIDA AGUARDANDO
-		boolean temCorridaAguardando = corridasRepository
-				.existsByMotoristaIdAndStatusCorrida(usuarioId, "AGUARDANDO");
-		
-		if (temCorridaAguardando) {
-			return ResponseEntity.badRequest().body("Motorista já possui corrida aguardando");
-		}
+	    Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(usuarioId);
+	    if (firebasetoken == null) {
+	        return ResponseEntity.badRequest().body("Usuário sem token Firebase");
+	    }
 
-		Usuario motorista = optional.get();
-		Usuario despachante = usuarioRepository.findById(despachanteId)
-				.orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
-		String endereco = body.get("endereco");
+	    // VERIFICA SE O MOTORISTA JÁ ESTÁ COM CORRIDA AGUARDANDO
+	    boolean temCorridaAguardando = corridasRepository
+	            .existsByMotoristaIdAndStatusCorrida(usuarioId, "AGUARDANDO");
 
-		ConfiguracaoCorrida configuracaoCorrida = configuracaoCorridaRepository.findByUsuarioId(despachanteId);
-		BigDecimal valorCorrida = (configuracaoCorrida != null && configuracaoCorrida.getValor() != null)
-				? configuracaoCorrida.getValor() : BigDecimal.ZERO;
+	    if (temCorridaAguardando) {
+	        return ResponseEntity.badRequest().body("Motorista já possui corrida aguardando");
+	    }
 
-		Corridas corrida = new Corridas();
-		corrida.setMotorista(motorista);
-		corrida.setCliente(despachante);
-		corrida.setUsuario(despachante);
-		corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
-		corrida.setStatus_corrida("AGUARDANDO");
-		corrida.setEndereco_entrega(endereco);
-		corrida.setValor_corrida(valorCorrida);
-		Corridas corridaSalva = corridasRepository.save(corrida);
+	    Usuario motorista = optional.get();
+	    Usuario despachante = usuarioRepository.findById(despachanteId)
+	            .orElseThrow(() -> new RuntimeException("Despachante não encontrado"));
+	    String endereco = body.get("endereco");
+	    String obs = body.get("obs");
 
-		String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
-				"Nova Corrida 🏍️", "Você tem uma nova corrida disponível!", corridaSalva.getId(), despachanteId);
+	    ConfiguracaoCorrida configuracaoCorrida = configuracaoCorridaRepository.findByUsuarioId(despachanteId);
+	    BigDecimal valorCorrida = (configuracaoCorrida != null && configuracaoCorrida.getValor() != null)
+	            ? configuracaoCorrida.getValor() : BigDecimal.ZERO;
 
-		messagingTemplate.convertAndSend("/topic/fila", usuarioId);
-		return ResponseEntity.ok(Map.of("corridaId", corridaSalva.getId(), "resposta", resposta));
+	    Corridas corrida = new Corridas();
+	    corrida.setMotorista(motorista);
+	    corrida.setCliente(despachante);
+	    corrida.setUsuario(despachante);
+	    corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
+	    corrida.setStatus_corrida("AGUARDANDO");
+	    corrida.setEndereco_entrega(endereco);
+	    corrida.setValor_corrida(valorCorrida);
+	    corrida.setObs(obs);
+	    Corridas corridaSalva = corridasRepository.save(corrida);
+
+	    String resposta = firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(),
+	            "Nova Corrida 🏍️", "Você tem uma nova corrida disponível!", corridaSalva.getId(), despachanteId);
+
+	    messagingTemplate.convertAndSend("/topic/fila", usuarioId);
+	    return ResponseEntity.ok(Map.of("corridaId", corridaSalva.getId(), "resposta", resposta));
 	}
 
 	@PostMapping(value = "/sendMultiple/{usuarioId}/{despachanteId}", produces = "application/json")
@@ -144,18 +146,23 @@ public class PushNotificationController {
 	            ? configuracaoCorrida.getValor() : BigDecimal.ZERO;
 
 	    @SuppressWarnings("unchecked")
-	    List<String> enderecos = (List<String>) body.get("enderecos");
+	    List<Map<String, Object>> enderecos = (List<Map<String, Object>>) body.get("enderecos");
 
 	    List<Long> corridaIds = new java.util.ArrayList<>();
-	    for (String endereco : enderecos) {
+	    for (Map<String, Object> item : enderecos) {
+	        String rua = (String) item.get("rua");
+	        String numero = (String) item.get("numero");
+	        String obs = (String) item.get("obs");
+
 	        Corridas corrida = new Corridas();
 	        corrida.setMotorista(motorista);
 	        corrida.setCliente(despachante);
 	        corrida.setUsuario(despachante);
 	        corrida.setData_chamada(new Timestamp(System.currentTimeMillis()));
 	        corrida.setStatus_corrida("AGUARDANDO");
-	        corrida.setEndereco_entrega(endereco);
+	        corrida.setEndereco_entrega(rua + ", " + numero);
 	        corrida.setValor_corrida(valorCorrida);
+	        corrida.setObs(obs);
 	        Corridas salva = corridasRepository.save(corrida);
 	        corridaIds.add(salva.getId());
 	    }

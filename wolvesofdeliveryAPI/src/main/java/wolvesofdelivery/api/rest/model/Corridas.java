@@ -34,6 +34,7 @@ public class Corridas implements Serializable {
 	private Timestamp termino_corrida;
 	private String status_corrida;
 	private BigDecimal valor_corrida;
+	private String obs;
 
 	@JsonIgnore
 	@ManyToOne
@@ -133,7 +134,13 @@ public class Corridas implements Serializable {
 	public void setValor_corrida(BigDecimal valor_corrida) {
 		this.valor_corrida = valor_corrida;
 	}
-	
-	
+
+	public String getObs() {
+		return obs;
+	}
+
+	public void setObs(String obs) {
+		this.obs = obs;
+	}
 
 }
