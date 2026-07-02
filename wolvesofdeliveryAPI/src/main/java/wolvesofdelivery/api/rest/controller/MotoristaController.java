@@ -3,6 +3,7 @@ package wolvesofdelivery.api.rest.controller;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import wolvesofdelivery.api.rest.model.CorridaRecusada;
 import wolvesofdelivery.api.rest.model.Corridas;
@@ -54,9 +55,20 @@ public class MotoristaController {
 	private WebSocketService webSocketService;
 	@Autowired
 	private MotoristaBloqueadoService motoristaBloqueadoService;
+	
+	//BUSCAO O ID DO USUARIO ONLINE
+	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
+	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
+	@GetMapping(value = "/status/{id}", produces = "application/json")
+	public ResponseEntity<?> buscarUsuarioPorId(@PathVariable Long id) {
+	    Optional<Usuario> optional = usuarioRepository.findById(id);
+	    if (!optional.isPresent()) {
+	        return ResponseEntity.badRequest().body("Usuário não encontrado");
+	    }
+	    return ResponseEntity.ok(optional.get());
+	}
 
-	// ____________CONSULTANDO USUÁRIO(MOTORISTA ONLINE e
-	// OFFLINE)_____________________//
+	// ____________CONSULTANDO USUÁRIO(MOTORISTA ONLINE e OFFLINE)_____________________//
 	@CacheEvict(value = "cacheUser", allEntries = true) // SE TIVER CACHE QUE NAO É USADO VAI REMOVER
 	@CachePut("cacheUser") // TEM MUDANÇA? VAI TRAZER E COLOCAR NO CACHE
 	@GetMapping(value = "/allDrive", produces = "application/json")
