@@ -4,11 +4,14 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import wolvesofdelivery.api.rest.model.Corridas;
+import wolvesofdelivery.api.rest.model.Firebasetoken;
 import wolvesofdelivery.api.rest.model.Usuario;
 import wolvesofdelivery.api.rest.repository.CorridaExpiradaRepository;
 import wolvesofdelivery.api.rest.repository.CorridasRecusadaRepository;
 import wolvesofdelivery.api.rest.repository.CorridasRepository;
+import wolvesofdelivery.api.rest.repository.FirebasetokenRepository;
 import wolvesofdelivery.api.rest.repository.UsuarioRepository;
+import wolvesofdelivery.api.rest.service.FirebaseNotificationService;
 import wolvesofdelivery.api.rest.service.WebSocketService;
 
 import java.math.BigDecimal;
@@ -44,6 +47,10 @@ public class CorridaController {
 	private UsuarioRepository usuarioRepository;
 	@Autowired
 	private WebSocketService webSocketService;
+	@Autowired
+	private FirebasetokenRepository firebasetokenRepository;
+	@Autowired
+	private FirebaseNotificationService firebaseNotificationService;
 
 	private final SimpMessagingTemplate messagingTemplate;
 
@@ -153,6 +160,12 @@ public class CorridaController {
 		messagingTemplate.convertAndSend("/topic/cancelarChamada", motoristaId);
 		webSocketService.notificarAtualizacaoFila();
 
+		// CANCELA A NOTIFICAÇÃO NA BARRA DO MOTORISTA
+		Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(motoristaId);
+		if (firebasetoken != null) {
+			firebaseNotificationService.enviarCancelamento(firebasetoken.getToken());
+		}
+
 		return ResponseEntity.ok("Chamada cancelada!");
 	}
 	
@@ -175,6 +188,12 @@ public class CorridaController {
 	    usuarioRepository.save(motorista);
 	    messagingTemplate.convertAndSend("/topic/cancelarChamada", motoristaId);
 	    webSocketService.notificarAtualizacaoFila();
+
+	    // CANCELA A NOTIFICAÇÃO NA BARRA DO MOTORISTA
+	    Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(motoristaId);
+	    if (firebasetoken != null) {
+	        firebaseNotificationService.enviarCancelamento(firebasetoken.getToken());
+	    }
 
 	    return ResponseEntity.ok("Chamada cancelada!");
 	}
