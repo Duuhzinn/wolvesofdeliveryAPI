@@ -12,7 +12,8 @@ public class WebSocketService {
     }
     
     public void notificarRecusaMotorista(Long proximoMotoristaId) {
-        messagingTemplate.convertAndSend("/topic/recusa", proximoMotoristaId);
+        messagingTemplate.convertAndSend("/topic/recusa", 
+            proximoMotoristaId != null ? proximoMotoristaId.toString() : "null");
     }
     
     public void notificarLocalizacaoMotorista(Map<String, Object> payload) {
