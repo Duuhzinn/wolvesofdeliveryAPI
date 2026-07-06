@@ -207,6 +207,8 @@ public class MotoristaController {
 			return ResponseEntity.ok(Map.of("proximoMotoristaId", proximoMotorista.getId()));
 
 		} else {
+			corrida.setStatus_corrida("EXPIRADA");
+		    corridasRepository.save(corrida);
 			return ResponseEntity.ok(Map.of("proximoMotoristaId", (Object) null));
 		}
 	}
@@ -274,6 +276,12 @@ public class MotoristaController {
 
 			return ResponseEntity.ok(Map.of("proximoMotoristaId", proximoMotorista.getId()));
 		} else {
+			// NENHUM MOTORISTA DISPONÍVEL - MARCA TODAS AS CORRIDAS COMO EXPIRADAS
+		    for (Long corridaId : corridaIds) {
+		        Corridas corrida = corridasRepository.findById(corridaId).orElseThrow();
+		        corrida.setStatus_corrida("EXPIRADA");
+		        corridasRepository.save(corrida);
+		    }
 			return ResponseEntity.ok(Map.of("proximoMotoristaId", (Object) null));
 		}
 	}
