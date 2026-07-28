@@ -9,12 +9,12 @@
 		<version>4.0.6</version>
 		<relativePath /> <!-- lookup parent from repository! -->
 	</parent>
-	<groupId>wolvesofdelivery.api.rest</groupId>
-	<artifactId>wolvesofdeliveryAPI</artifactId>
+	<groupId>duolthdelivery.api.rest</groupId>
+	<artifactId>duolthdeliveryAPI</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>wolvesofdeliveryAPI</name>
-	<description>Api Wolves Of Delivery</description>
+	<name>duolthdeliveryAPI</name>
+	<description>Api Duolth Delivery</description>
 	<url />
 	<licenses>
 		<license />
@@ -114,8 +114,8 @@
     		<groupId>com.google.firebase</groupId>
     		<artifactId>firebase-admin</artifactId>
     		<version>9.2.0</version>
-		</dependency> 
-		
+		</dependency>
+
 		<dependency>
     		<groupId>org.springframework.boot</groupId>
     		<artifactId>spring-boot-starter-websocket</artifactId>
