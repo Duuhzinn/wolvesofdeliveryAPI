@@ -213,10 +213,13 @@ public class PushNotificationController {
 		Corridas corrida = corridasRepository.findById(corridaId)
 				.orElseThrow(() -> new RuntimeException("Corrida não encontrada"));
 
+		if (!"AGUARDANDO".equals(corrida.getStatus_corrida())) {
+			return ResponseEntity.badRequest().body("Corrida não está mais disponível para aceite");
+		}
+
 		corrida.setData_aceite(new Timestamp(System.currentTimeMillis()));
 		corrida.setStatus_corrida("EM ANDAMENTO");
 		corridasRepository.save(corrida);
-
 		messagingTemplate.convertAndSend("/topic/corrida", corrida.getMotorista().getId());
 		return ResponseEntity.ok("Corrida aceita pelo motorista " + corrida.getMotorista().getId());
 	}
@@ -225,17 +228,25 @@ public class PushNotificationController {
 	@CachePut("cacheUser")
 	@PatchMapping(value = "/acceptMultiple", produces = "application/json")
 	public ResponseEntity<?> corridasAceitas(@RequestBody List<Long> corridaIds) {
+	    List<Corridas> corridasValidas = new java.util.ArrayList<>();
+
 	    for (Long corridaId : corridaIds) {
 	        Corridas corrida = corridasRepository.findById(corridaId)
 	                .orElseThrow(() -> new RuntimeException("Corrida não encontrada: " + corridaId));
+
+	        if (!"AGUARDANDO".equals(corrida.getStatus_corrida())) {
+	            return ResponseEntity.badRequest().body("Uma ou mais corridas não estão mais disponíveis para aceite");
+	        }
+	        corridasValidas.add(corrida);
+	    }
+
+	    for (Corridas corrida : corridasValidas) {
 	        corrida.setData_aceite(new Timestamp(System.currentTimeMillis()));
 	        corrida.setStatus_corrida("EM ANDAMENTO");
 	        corridasRepository.save(corrida);
 	    }
 
-	    Long motoristaId = corridasRepository.findById(corridaIds.get(0))
-	            .orElseThrow().getMotorista().getId();
-
+	    Long motoristaId = corridasValidas.get(0).getMotorista().getId();
 	    messagingTemplate.convertAndSend("/topic/corrida", motoristaId);
 	    return ResponseEntity.ok("Corridas aceitas: " + corridaIds);
 	}
