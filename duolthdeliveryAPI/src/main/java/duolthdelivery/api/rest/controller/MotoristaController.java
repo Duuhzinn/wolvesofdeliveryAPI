@@ -269,8 +269,8 @@ public class MotoristaController {
 			// 6 - ENVIA NOTIFICAÇÃO PARA O PRÓXIMO MOTORISTA
 			Firebasetoken firebasetoken = firebasetokenRepository.findByUsuarioId(proximoMotorista.getId());
 			if (firebasetoken != null) {
-				firebaseNotificationService.enviarNotificacao(firebasetoken.getToken(), "Nova Corrida 🏍️",
-						corridaIds.size() + " entrega(s) disponível!", corridaIds.get(0), despachanteId);
+			    firebaseNotificationService.enviarNotificacaoMultipla(firebasetoken.getToken(), "Nova Corrida 🏍️",
+			            corridaIds.size() + " entrega(s) disponível!", corridaIds, despachanteId);
 			}
 
 			return ResponseEntity.ok(Map.of("proximoMotoristaId", proximoMotorista.getId()));
